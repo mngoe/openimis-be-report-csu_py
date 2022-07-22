@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('title', models.TextField()),
             ],
             options={
-                'db_table': 'report_TestReport',
+                'db_table': 'tblRole',
                 'managed': True,
             },
         ),
