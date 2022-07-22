@@ -3,7 +3,7 @@ import json
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseServerError, FileResponse
 from reportbro import Report, ReportBroError
-from .models import TestReport
+from .models import TestReport, TestReports
 from .test_report import test_report
 from django.core.serializers.json import DjangoJSONEncoder
 
