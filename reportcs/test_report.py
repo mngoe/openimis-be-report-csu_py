@@ -11,7 +11,7 @@ test_report = """ \
       "elementType": "text",  
     },
     {
-      "id": 3,
+      "RoleName": '',
       "name": "report_name",
       "type": "string",
       "arrayItemType": "string",

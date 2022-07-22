@@ -9,14 +9,14 @@ class TestReport(core_models.UUIDModel):
     REPORT_ENGINE_CHOICES = (
         (REPORT_BRO, "Report Bro - PDF"),
     )
-    name = models.CharField(max_length=255, blank=False, null=False, unique=True)
-    engine = models.IntegerField( choices=REPORT_ENGINE_CHOICES, default=REPORT_BRO)
-    definition =  models.TextField()
-    title = models.TextField()
+    #name = models.CharField(max_length=255, blank=False, null=False, unique=True)
+    #engine = models.IntegerField( choices=REPORT_ENGINE_CHOICES, default=REPORT_BRO)
+    RoleId =  models.IntegerField(null=False)
+    RoleName = models.CharField(max_length=50)
 
     class Meta:
         managed = True
-        db_table = "report_TestReport"
+        db_table = "tblRole"
 
 #fonction 
 
