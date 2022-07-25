@@ -1,4 +1,4 @@
-# openIMIS Backend reports reference module
+# openIMIS Backend report reference module
 This repository holds the files of the openIMIS Backend Cheque Santé reference module. 
 
 It is dedicated to be deployed as a module of [openimis-be_py](https://github.com/openimis/openimis-be_py). 
