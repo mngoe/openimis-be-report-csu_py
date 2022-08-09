@@ -10,7 +10,7 @@ def sales_objectives_rate_query():
     }
 
 
-def pregnant_woman_with_cs_query(date_from=None,date_to=None):
+def cpn1_with_cs_query(date_from=None,date_to=None):
     queryset = ()
 
     return {"data": list(queryset)}
