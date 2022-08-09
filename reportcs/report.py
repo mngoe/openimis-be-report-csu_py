@@ -46,7 +46,7 @@ report_definitions = [
         "name": "pregnant_woman_with_cs",
         "engine": 0,
         "default_report":rptPregnantWithCs.template,
-        "description": "insuree without photo report ",
+        "description": "Number of CPN4 performed under health check ",
         "module": "reportcs",
         "python_query": pregnant_woman_with_cs_query, 
         "permission": ["131215"],
