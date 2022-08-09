@@ -5,7 +5,7 @@ from reportcs.report_templates import rptAssistedBirth
 from reportcs.report_templates import rptCponUnderCs
 from reportcs.report_templates import rptNewbornCPoN
 from reportcs.report_templates import rptReferalRate
-from reportcs.report_templates import rptPregnantWithCs
+from reportcs.report_templates import rptCpn4UnderCheck
 from reportcs.report_templates import rptCpn1UnderCheck
 from reportcs.report_templates import rptInvoicePerFosa
 from reportcs.report_templates import rptPaidInvoice
@@ -43,12 +43,12 @@ report_definitions = [
         "permission": ["131215"],
     },
     {
-        "name": "pregnant_woman_with_cs",
+        "name": "cpn4_under_cs",
         "engine": 0,
-        "default_report":rptPregnantWithCs.template,
-        "description": "insuree without photo report ",
+        "default_report":rptCpn4UnderCheck.template,
+        "description": "Number of CPN4 performed under health check ",
         "module": "reportcs",
-        "python_query": pregnant_woman_with_cs_query, 
+        "python_query": cpn4_with_cs_query, 
         "permission": ["131215"],
     },
     {
