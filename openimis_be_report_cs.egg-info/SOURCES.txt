@@ -1,3 +1,5 @@
+LICENCE.md
+MANIFEST.in
 README.md
 setup.py
 openimis_be_report_cs.egg-info/PKG-INFO
@@ -10,9 +12,6 @@ reportcs/admin.py
 reportcs/apps.py
 reportcs/models.py
 reportcs/report.py
-reportcs/services.py
-reportcs/test_report.py
 reportcs/tests.py
 reportcs/urls.py
 reportcs/views.py
-reportcs/migrations/__init__.py
