@@ -9,7 +9,7 @@ template = """\
             "y": 20,
             "width": 575,
             "height": 50,
-            "content": "Taux d'accouchements compliqués CS au cours d’une période déterminée",
+            "content": "Coût moyen du paludisme grave pris en charge par les bénéficiaires du chèque",
             "richText": false,
             "richTextContent": null,
             "richTextHtml": "",
