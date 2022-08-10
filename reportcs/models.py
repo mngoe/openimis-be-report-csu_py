@@ -3,88 +3,75 @@ from core import models as core_models
 from report.services import run_stored_proc_report
 
 
-def cpn1_with_cs_query(date_from=None,date_to=None):
+def cpn1_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def cpn4_with_cs_query(date_from=None,date_to=None):
+def cpn4_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def assisted_birth_with_cs_query(date_from=None,date_to=None):
+def assisted_birth_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def mother_cpon_with_cs_query():
+def mother_cpon_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def newborn_cpon_with_cs_query():
+def newborn_cpon_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def complicated_birth_with_cs_query():
-    data = run_stored_proc_report()
-    return {
-        "data": data
-    }
-
-def cesarienne_rate_query():
+def complicated_birth_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def pregnant_woman_ref_rate_query():
+def cesarienne_rate_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def user_log_report_query(user,date_from=None, date_to=None,action=None):
-    data = run_stored_proc_report(
-        "uspSSRSUserLogReport",
-        FromDate = date_from,
-        ToDate  = date_to,
-        Action = action,
-    )
-    return {
-        "data": data
-    }
-
-def invoice_per_fosa_query():
+def pregnant_woman_ref_rate_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def expired_policies_query():
+def invoice_per_fosa_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def periodic_paid_bills_query():
+def expired_policies_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def periodic_rejected_bills_query():
+def periodic_paid_bills_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def periodic_household_participation_query():
+def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def cs_sales_amount_query():
+def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def new_cs_per_month_query():
+def cs_sales_amount_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def cs_in_use_query():
+def new_cs_per_month_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def closed_cs_query():
+def cs_in_use_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def severe_malaria_cost_query():
+def closed_cs_query(date_from=None, date_to=None, **kwargs):
+    queryset = ()
+    return {"data": list(queryset)}
+
+def severe_malaria_cost_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 

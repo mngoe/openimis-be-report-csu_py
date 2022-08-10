@@ -81,7 +81,7 @@ report_definitions = [
         "permission": ["131215"],
     },
     {
-        "name": "pregnant woman reference rate",
+        "name": "pregnant_woman_reference_rate",
         "engine": 0,
         "default_report": rptReferalRate.template ,
         "description": "Taux de référencement des femmes enceintes",
