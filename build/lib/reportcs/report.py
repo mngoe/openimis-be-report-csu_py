@@ -14,19 +14,9 @@ from reportcs.report_templates import rptRejectedBills
 from reportcs.report_templates import rptcsInUse
 from reportcs.report_templates import rptClosedCs
 from reportcs.report_templates import rptSevereMalariaCost
-from reportcs.report_templates import rptInvoiceperPeriod
 
 
 report_definitions = [ 
-    {
-        "name": "invoice_fosa_cs",
-        "engine": 0,
-        "default_report":rptInvoiceperPeriod.template,
-        "description": "Etat de paiement",
-        "module": "reportcs",
-        "python_query": cpn1_with_cs_query, 
-        "permission": ["131215"],
-    },
     {
         "name": "cpn1_under_cs",
         "engine": 0,
