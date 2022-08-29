@@ -1,5 +1,5 @@
 from distutils.command import upload
-from reportcs.models import  assisted_birth_with_cs_query, cesarienne_rate_query, closed_cs_query, complicated_birth_with_cs_query, cpn1_with_cs_query, cs_in_use_query, invoice_per_fosa_query, severe_malaria_cost_query, mother_cpon_with_cs_query, newborn_cpon_with_cs_query, pregnant_woman_ref_rate_query, cpn4_with_cs_query, periodic_paid_bills_query,periodic_rejected_bills_query
+from reportcs.models import  assisted_birth_with_cs_query, cesarienne_rate_query, closed_cs_query, complicated_birth_with_cs_query, cpn1_with_cs_query, cs_in_use_query, invoice_per_fosa_query, severe_malaria_cost_query, mother_cpon_with_cs_query, newborn_cpon_with_cs_query, pregnant_woman_ref_rate_query, cpn4_with_cs_query, periodic_paid_bills_query,periodic_rejected_bills_query, invoice_cs_query
 from reportcs.report_templates import rptAssistedBirth
 from reportcs.report_templates import rptCponUnderCs
 from reportcs.report_templates import rptNewbornCPoN
@@ -24,7 +24,7 @@ report_definitions = [
         "default_report":rptInvoiceperPeriod.template,
         "description": "Etat de paiement",
         "module": "reportcs",
-        "python_query": cpn1_with_cs_query, 
+        "python_query": invoice_cs_query, 
         "permission": ["131215"],
     },
     {
