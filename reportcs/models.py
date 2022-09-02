@@ -78,7 +78,6 @@ def invoice_cs_query(user, **kwargs):
             invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValide"] += invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum']
             invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnNotValide"] = invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotal"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValide"]
             invoiceElemtTotal["QtyTotal"] += claimServiceElmt.qty_provided
-            invoiceElemtTotal["MontantRecueTotal"] += invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"]
 
         claimItem = ClaimItem.objects.filter(
             claim = cclaim
@@ -107,7 +106,6 @@ def invoice_cs_query(user, **kwargs):
             invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnNotValide"] = invoiceElemtTotal[claimItemElmt.service.packagetype+"MontantRecueTotal"] - invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValide"]
             
             invoiceElemtTotal["QtyTotal"] += claimItemElmt.qty_provided
-            invoiceElemtTotal["MontantRecueTotal"] += invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["MontantRecue"]
         
     print ("{:<5} {:<5} {:<30} {:<10} {:<10} {:<10} {:<10}".format('type','id','name','Code','tarif','qty', 'Montant Recus'))
     for typeList,v in invoiceElemtList.items():
@@ -184,13 +182,13 @@ def invoice_cs_query(user, **kwargs):
     invoiceElemtTotal["SMtnNotValide"] = "{:,.0f}".format(invoiceElemtTotal["SMtnNotValide"])
     invoiceElemtTotal["PMtnNotValide"] = "{:,.0f}".format(invoiceElemtTotal["PMtnNotValide"])
 
+    invoiceElemtTotal["MontantRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal["PMontantRecueTotal"]+invoiceElemtTotal["FMontantRecueTotal"]+invoiceElemtTotal["SMontantRecueTotal"])
+
     invoiceElemtTotal["PMontantRecueTotal"] = "{:,.0f}".format(invoiceElemtTotal["PMontantRecueTotal"])
     invoiceElemtTotal["SMontantRecueTotal"] = "{:,.0f}".format(invoiceElemtTotal["SMontantRecueTotal"])
     invoiceElemtTotal["FMontantRecueTotal"] = "{:,.0f}".format(invoiceElemtTotal["FMontantRecueTotal"])
 
-
     invoiceElemtTotal["QtyTotal"] = "{:,.0f}".format(invoiceElemtTotal["QtyTotal"])
-    invoiceElemtTotal["MontantRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal["MontantRecueTotal"])
     
 
     print(invoiceElemtTotal)
