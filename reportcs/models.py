@@ -138,7 +138,7 @@ def invoice_cs_query(user, **kwargs):
                     montantNonValide = str("{:,.0f}".format(v[id]['MontantRecue'] - v[id]['tarif']*v[id]['qty']['valuated'])),
                     montantValide =  str("{:,.0f}".format(v[id]['tarif']*v[id]['qty']['valuated']))                    
                     ))
-                invoiceElemtTotal["FMontantRecueTotal"] = v[id]['MontantRecue']
+                invoiceElemtTotal["FMontantRecueTotal"] += v[id]['MontantRecue']
                 invoiceElemtTotal["FQtyValuated"] += v[id]['qty']['valuated']
                 invoiceElemtTotal["FMtnNotValide"] += v[id]['MontantRecue'] - v[id]['tarif']*v[id]['qty']['valuated']
                 invoiceElemtTotal["FMtnValide"] += v[id]['qty']['valuated']
