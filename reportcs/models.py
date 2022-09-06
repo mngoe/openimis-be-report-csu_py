@@ -80,8 +80,7 @@ def invoice_cs_query(user, **kwargs):
             ## Status Valuated of Claim          
             if cclaim.status==16:
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
-                print(type(claimServiceElmt.price_valuated))
-                if type(claimServiceElmt.price_valuated)=="NoneType" :
+                if claimServiceElmt.price_valuated == None :
                     claimServiceElmt.price_valuated = 0
                 
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
