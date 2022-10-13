@@ -150,7 +150,7 @@ def invoice_cs_query(user, **kwargs):
         
     print ("{:<5} {:<5} {:<30} {:<10} {:<10} {:<10} {:<10}".format('type','id','name','Code','tarif','qty', 'Montant Recus'))
     for typeList,v in invoiceElemtList.items():
-        for id in  v:
+        for id in v:
             if typeList=="P":
                 invoiceElemtListP.append(dict(
                     name=v[id]['name'],
@@ -261,6 +261,7 @@ def invoice_cs_query(user, **kwargs):
         dictBase["area"] = location2_str
     
     return dictBase
+    print ('sum')
 
 def cpn1_with_cs_query(user, **kwargs):
     date_from = kwargs.get("date_from")
@@ -291,26 +292,26 @@ def cpn1_with_cs_query(user, **kwargs):
         }
     print(dictBase)
 
-    if location0:
-        location0_str = Location.objects.filter(
-            code=location0,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["region"] = location0_str
+    # if location0:
+    #     location0_str = Location.objects.filter(
+    #         code=location0,
+    #         validity_to__isnull=True
+    #         ).first().name
+    #     dictBase["region"] = location0_str
 
-    if location1:
-        location1_str = Location.objects.filter(
-            code=location1,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["district"] =location1_str
+    # if location1:
+    #     location1_str = Location.objects.filter(
+    #         code=location1,
+    #         validity_to__isnull=True
+    #         ).first().name
+    #     dictBase["district"] =location1_str
     
-    if location2:
-        location2_str = Location.objects.filter(
-            code=location2,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["area"] = location2_str
+    # if location2:
+    #     location2_str = Location.objects.filter(
+    #         code=location2,
+    #         validity_to__isnull=True
+    #         ).first().name
+    #     dictBase["area"] = location2_str
     
     if hflocation:
         hflocation_str = HealthFacility.objects.filter(
@@ -382,13 +383,65 @@ def expired_policies_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-def periodic_paid_bills_query(date_from=None, date_to=None, **kwargs):
-    queryset = ()
-    return {"data": list(queryset)}
+def periodic_paid_bills_query(user, **kwargs):
+
+    date_from = kwargs.get("date_from")
+    date_to = kwargs.get("date_to")
+    location0 = kwargs.get("location0")
+    location1 = kwargs.get("location1")
+    location2 = kwargs.get("location2")
+    hflocation = kwargs.get("hflocation")
+
+    format = "%Y-%m-%d"
+
+    date_from_object = datetime.datetime.strptime(date_from, format)
+    date_from_str = date_from_object.strftime("%d/%m/%Y")
+
+    date_to_object = datetime.datetime.strptime(date_to, format)
+    date_to_str = date_to_object.strftime("%d/%m/%Y")
+    
+    claimList = Claim.objects.filter(
+        date_from__gte=date_from,
+        date_from__lte=date_to
+        )
+
+    # invoiceElemtList = defaultdict(dict)
+    # invoiceElemtTotal = defaultdict(int)
+    # invoiceElemtListP = []
+    # invoiceElemtListF = []
+    # invoiceElemtListS = []
+
+    for valuated in claimList:
+
+        claimItem = ClaimItem.objects.filter(
+            claim = valuated
+        ).count()
+
+   
+    dictBase =  {
+        "dateFrom": date_from_str,
+        "dateTo": date_to_str,
+        "fosa": hflocation,
+        "nbvaluated": str(claimItem)
+        }
+
+    print (dictBase)
+    return dictBase
+    
+
+    if hflocation:
+        hflocation_str = HealthFacility.objects.filter(
+            code=hflocation,
+            validity_to__isnull=True
+            ).first().name
+        dictBase["fosa"] = hflocation_str
+
+    return dictBase
 
 def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
+
 
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
