@@ -408,8 +408,7 @@ def periodic_paid_bills_query(user, **kwargs):
     
 
     return dictBase
-    
-  
+
 def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
