@@ -413,7 +413,6 @@ def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
 
-
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
