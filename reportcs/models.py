@@ -261,7 +261,6 @@ def invoice_cs_query(user, **kwargs):
         dictBase["area"] = location2_str
     
     return dictBase
-    print ('sum')
 
 def cpn1_with_cs_query(user, **kwargs):
     date_from = kwargs.get("date_from")
@@ -292,27 +291,6 @@ def cpn1_with_cs_query(user, **kwargs):
         }
     print(dictBase)
 
-    # if location0:
-    #     location0_str = Location.objects.filter(
-    #         code=location0,
-    #         validity_to__isnull=True
-    #         ).first().name
-    #     dictBase["region"] = location0_str
-
-    # if location1:
-    #     location1_str = Location.objects.filter(
-    #         code=location1,
-    #         validity_to__isnull=True
-    #         ).first().name
-    #     dictBase["district"] =location1_str
-    
-    # if location2:
-    #     location2_str = Location.objects.filter(
-    #         code=location2,
-    #         validity_to__isnull=True
-    #         ).first().name
-    #     dictBase["area"] = location2_str
-    
     if hflocation:
         hflocation_str = HealthFacility.objects.filter(
             code=hflocation,
@@ -404,13 +382,7 @@ def periodic_paid_bills_query(user, **kwargs):
         date_from__gte=date_from,
         date_from__lte=date_to
         )
-
-    # invoiceElemtList = defaultdict(dict)
-    # invoiceElemtTotal = defaultdict(int)
-    # invoiceElemtListP = []
-    # invoiceElemtListF = []
-    # invoiceElemtListS = []
-
+    
     for valuated in claimList:
 
         claimItem = ClaimItem.objects.filter(
@@ -424,10 +396,8 @@ def periodic_paid_bills_query(user, **kwargs):
         "fosa": hflocation,
         "nbvaluated": str(claimItem)
         }
-
-    print (dictBase)
-    return dictBase
     
+    return dictBase
 
     if hflocation:
         hflocation_str = HealthFacility.objects.filter(
@@ -435,9 +405,11 @@ def periodic_paid_bills_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["fosa"] = hflocation_str
+    
 
     return dictBase
-
+    
+  
 def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
