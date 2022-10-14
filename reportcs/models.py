@@ -410,9 +410,31 @@ def periodic_paid_bills_query(user, **kwargs):
     return dictBase
     
   
-def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
-    queryset = ()
-    return {"data": list(queryset)}
+def periodic_rejected_bills_query(user, **kwargs):
+    date_from = kwargs.get("date_from")
+    date_to = kwargs.get("date_to")
+    location0 = kwargs.get("location0")
+    location1 = kwargs.get("location1")
+    location2 = kwargs.get("location2")
+    hflocation = kwargs.get("hflocation")
+
+    format = "%Y-%m-%d"
+
+    date_from_object = datetime.datetime.strptime(date_from, format)
+    date_from_str = date_from_object.strftime("%d/%m/%Y")
+
+    date_to_object = datetime.datetime.strptime(date_to, format)
+    date_to_str = date_to_object.strftime("%d/%m/%Y")
+
+    dictBase = {
+        "dateFrom": date_from_str,
+        "dateTo": date_to_str,
+        "fosa": hflocation,
+
+        }
+
+    print (dictBase)
+    return dictBase
 
 
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
