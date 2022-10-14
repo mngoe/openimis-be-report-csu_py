@@ -399,16 +399,6 @@ def periodic_paid_bills_query(user, **kwargs):
     
     return dictBase
 
-    if hflocation:
-        hflocation_str = HealthFacility.objects.filter(
-            code=hflocation,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["fosa"] = hflocation_str
-    
-
-    return dictBase
-
 def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
