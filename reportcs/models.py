@@ -399,18 +399,8 @@ def periodic_paid_bills_query(user, **kwargs):
     
     return dictBase
 
-    if hflocation:
-        hflocation_str = HealthFacility.objects.filter(
-            code=hflocation,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["fosa"] = hflocation_str
-    
-
-    return dictBase
-    
-  
 def periodic_rejected_bills_query(user, **kwargs):
+
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     location0 = kwargs.get("location0")
@@ -426,13 +416,24 @@ def periodic_rejected_bills_query(user, **kwargs):
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
 
+    claimList = Claim.objects.filter(
+        date__gte = date_from,
+        date__lte = date_to
+    )
+
+    for ClaimStatus in  claimList:
+    
+        ClaimItem = ClaimItem.objects.filter(
+            Claim="16"
+        )
+
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
         "fosa": hflocation,
-
+        "rejected": str(claimItem)
         }
-
+    return claimItem
     print (dictBase)
     return dictBase
 
