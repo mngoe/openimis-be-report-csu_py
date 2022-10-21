@@ -319,7 +319,7 @@ def cpn4_with_cs_query(user, **kwargs):
         validity_to__gte=date_to,
         code ='CPN4'
         ).count()
-    dictBase = {
+    return {
         "data": str(queryset),
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
@@ -328,8 +328,6 @@ def cpn4_with_cs_query(user, **kwargs):
         "area": location2,
         "fosa": hflocation
     }
-    print(dictBase)
-    return dictBase
 
 def assisted_birth_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
@@ -431,9 +429,6 @@ def periodic_rejected_bills_query(user, **kwargs):
         "fosa": hflocation,
         "post": str(queryset)
         }
-   
-    
-    print (dictBase)
     return dictBase
 
 
