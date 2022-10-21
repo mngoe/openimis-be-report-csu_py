@@ -317,9 +317,9 @@ def cpn4_with_cs_query(user, **kwargs):
     queryset = Claim.objects.filter(
         validity_from__gte=date_from,
         validity_to__gte=date_to,
-        code='CPN4'
+        code ='CPN4'
         ).count()
-    return {
+    dictBase = {
         "data": str(queryset),
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
@@ -327,7 +327,9 @@ def cpn4_with_cs_query(user, **kwargs):
         "district": location1,
         "area": location2,
         "fosa": hflocation
-        }
+    }
+    print(dictBase)
+    return dictBase
 
 def assisted_birth_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
@@ -416,24 +418,21 @@ def periodic_rejected_bills_query(user, **kwargs):
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
 
-    claimList = Claim.objects.filter(
-        date__gte = date_from,
-        date__lte = date_to
-    )
-
-    for ClaimStatus in  claimList:
     
-        ClaimItem = ClaimItem.objects.filter(
-            Claim="16"
-        )
-
+    queryset = Claim.objects.filter(
+        validity_from__gte=date_from,
+        validity_to__gte=date_to,
+        status=1
+        ).count()
+   
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
         "fosa": hflocation,
-        "rejected": str(claimItem)
+        "post": str(queryset)
         }
-    return claimItem
+   
+    
     print (dictBase)
     return dictBase
 
