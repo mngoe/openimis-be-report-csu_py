@@ -5,7 +5,7 @@ from report.services import run_stored_proc_report
 from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
 from collections import defaultdict
-
+from django.db.models import Count
 import json
 import datetime
 
@@ -416,18 +416,18 @@ def periodic_rejected_bills_query(user, **kwargs):
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
 
-    
     queryset = Claim.objects.filter(
-        validity_from__gte=date_from,
-        validity_to__gte=date_to,
-        status=1
+        date_from__gte=date_from,
+        date_from__lte=date_to
+        )
+    for status in queryset:
+        claimItem = ClaimItem.objects.filter(
         ).count()
-   
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
         "fosa": hflocation,
-        "post": str(queryset)
+        "post": str(claimItem)
         }
     return dictBase
 
