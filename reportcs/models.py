@@ -398,7 +398,6 @@ def periodic_paid_bills_query(user, **kwargs):
         }
     
     return dictBase
-
 def periodic_rejected_bills_query(user, **kwargs):
 
     date_from = kwargs.get("date_from")
@@ -431,7 +430,6 @@ def periodic_rejected_bills_query(user, **kwargs):
         "post": str(claimItem)
         }
     return dictBase
-
 
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
