@@ -422,6 +422,7 @@ def periodic_rejected_bills_query(user, **kwargs):
         )
     for status in queryset:
         claimItem = ClaimItem.objects.filter(
+            status = 1
         ).count()
     dictBase = {
         "dateFrom": date_from_str,
