@@ -1,11 +1,12 @@
 from tokenize import String
 from django.db import models
 from core import models as core_models
+from medical.models import Item, Service
 from report.services import run_stored_proc_report
 from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
 from collections import defaultdict
-
+from django.db.models import Count
 import json
 import datetime
 
@@ -291,13 +292,6 @@ def cpn1_with_cs_query(user, **kwargs):
         }
     print(dictBase)
 
-    if hflocation:
-        hflocation_str = HealthFacility.objects.filter(
-            code=hflocation,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["fosa"] = hflocation_str
-    return dictBase
 
 def cpn4_with_cs_query(user, **kwargs):
     date_from = kwargs.get("dateFrom")
@@ -398,11 +392,38 @@ def periodic_paid_bills_query(user, **kwargs):
         }
     
     return dictBase
+def periodic_rejected_bills_query(user, **kwargs):
 
-def periodic_rejected_bills_query(date_from=None, date_to=None, **kwargs):
-    queryset = ()
-    return {"data": list(queryset)}
+    date_from = kwargs.get("date_from")
+    date_to = kwargs.get("date_to")
+    location0 = kwargs.get("location0")
+    location1 = kwargs.get("location1")
+    location2 = kwargs.get("location2")
+    hflocation = kwargs.get("hflocation")
 
+    format = "%Y-%m-%d"
+
+    date_from_object = datetime.datetime.strptime(date_from, format)
+    date_from_str = date_from_object.strftime("%d/%m/%Y")
+
+    date_to_object = datetime.datetime.strptime(date_to, format)
+    date_to_str = date_to_object.strftime("%d/%m/%Y")
+
+    queryset = Claim.objects.filter(
+        date_from__gte=date_from,
+        date_from__lte=date_to
+        )
+    for status in queryset:
+        claimItem = ClaimItem.objects.filter(
+            status = 1
+        ).count()
+    dictBase = {
+        "dateFrom": date_from_str,
+        "dateTo": date_to_str,
+        "fosa": hflocation,
+        "post": str(claimItem)
+        }
+    return dictBase
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
