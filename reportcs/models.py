@@ -311,33 +311,23 @@ def cpn4_with_cs_query(user, **kwargs):
 
     date_from_object = datetime.datetime.strptime(date_from, format)
     date_from_str = date_from_object.strftime("%d/%m/%Y")
-
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
 
-    queryset = ClaimService.objects.filter(
+    queryset = Claim.objects.filter(
         validity_from__gte=date_from,
         validity_to__gte=date_to,
-        
+        code='CPN4'
         ).count()
-
-   
-
-    dictBase = {
+    return {
+        "data": str(queryset),
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
-        "fosa": hflocation,
-        "post": str(queryset)
-
-    }
-    if hflocation:
-        hflocation_str = HealthFacility.objects.filter(
-            code=hflocation,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["fosa"] = hflocation_str
-    print(dictBase)
-    return dictBase
+        "region": location0,
+        "district": location1,
+        "area": location2,
+        "fosa": hflocation
+        }
 
 
 def assisted_birth_with_cs_query(date_from=None, date_to=None, **kwargs):
