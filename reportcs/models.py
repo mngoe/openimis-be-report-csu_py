@@ -409,6 +409,8 @@ def periodic_rejected_bills_query(user, **kwargs):
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
 
+   
+
     queryset = Claim.objects.filter(
         date_from__gte=date_from,
         date_from__lte=date_to
@@ -423,6 +425,12 @@ def periodic_rejected_bills_query(user, **kwargs):
         "fosa": hflocation,
         "post": str(claimItem)
         }
+    if hflocation and hflocation!="0" :
+        hflocationObj = HealthFacility.objects.filter(
+            code=hflocation,
+            validity_to__isnull=True
+            ).first()
+        dictBase["fosa"] = hflocationObj.name
     return dictBase
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
