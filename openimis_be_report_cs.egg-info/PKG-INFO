@@ -6,7 +6,6 @@ Home-page: https://openimis.org
 Author: Francine MADOH
 Author-email: francinemadoh@gmail.com
 License: GNU AGPL v3
-Platform: UNKNOWN
 Classifier: Environment : : Web Environment
 Classifier: Framework :: Django
 Classifier: Framework :: Django

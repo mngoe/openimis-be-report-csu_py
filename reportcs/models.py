@@ -1,6 +1,7 @@
 from tokenize import String
 from django.db import models
 from core import models as core_models
+from medical.models import Item, Service
 from report.services import run_stored_proc_report
 from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
@@ -291,13 +292,6 @@ def cpn1_with_cs_query(user, **kwargs):
         }
     print(dictBase)
 
-    if hflocation:
-        hflocation_str = HealthFacility.objects.filter(
-            code=hflocation,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["fosa"] = hflocation_str
-    return dictBase
 
 def cpn4_with_cs_query(user, **kwargs):
     date_from = kwargs.get("dateFrom")
@@ -328,7 +322,6 @@ def cpn4_with_cs_query(user, **kwargs):
         "area": location2,
         "fosa": hflocation
         }
-
 
 def assisted_birth_with_cs_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
@@ -434,7 +427,6 @@ def periodic_paid_bills_query(user, **kwargs):
         }
     
     return dictBase
-
 def periodic_rejected_bills_query(user, **kwargs):
 
     date_from = kwargs.get("date_from")
@@ -467,8 +459,6 @@ def periodic_rejected_bills_query(user, **kwargs):
         "post": str(claimItem)
         }
     return dictBase
-
-
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
