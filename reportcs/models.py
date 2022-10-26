@@ -315,10 +315,10 @@ def cpn4_with_cs_query(user, **kwargs):
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
 
-    queryset = ClaimServiceItem.objects.filter(
+    queryset = ClaimService.objects.filter(
         validity_from__gte=date_from,
         validity_to__gte=date_to,
-        idCsi = '3'
+        service = 3
         ).count()
 
     dictBase = {
@@ -328,6 +328,7 @@ def cpn4_with_cs_query(user, **kwargs):
         "post": str(queryset)
 
     }
+    print(dictBase)
     return dictBase
 
 
