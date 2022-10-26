@@ -318,8 +318,10 @@ def cpn4_with_cs_query(user, **kwargs):
     queryset = ClaimService.objects.filter(
         validity_from__gte=date_from,
         validity_to__gte=date_to,
-        service = 3
+        
         ).count()
+
+   
 
     dictBase = {
         "dateFrom": date_from_str,
@@ -328,6 +330,12 @@ def cpn4_with_cs_query(user, **kwargs):
         "post": str(queryset)
 
     }
+    if hflocation:
+        hflocation_str = HealthFacility.objects.filter(
+            code=hflocation,
+            validity_to__isnull=True
+            ).first().name
+        dictBase["fosa"] = hflocation_str
     print(dictBase)
     return dictBase
 
