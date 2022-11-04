@@ -507,7 +507,6 @@ def closed_cs_query(user, **kwargs):
         "dateTo": date_to_str,
         "post": str(policy)
     }
-    dictGeoo = {}
     if hflocation and hflocation !="0":
         hflocationObj = HealthFacility.objects.filter(
             code = hflocation,
