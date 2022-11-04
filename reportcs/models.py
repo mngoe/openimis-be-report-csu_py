@@ -497,14 +497,17 @@ def closed_cs_query(user, **kwargs):
     date_to_str = date_to_object.strftime("%d/%m/%Y")
     
     policy = Policy.objects.filter(
-            status = 8
+        validity_from__gte = date_from,
+        validity_to__gte = date_to,
+        status = 8
         ).count()
-    print(policy)
+    
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
         "post": str(policy)
     }
+    dictGeoo = {}
     if hflocation and hflocation !="0":
         hflocationObj = HealthFacility.objects.filter(
             code = hflocation,
