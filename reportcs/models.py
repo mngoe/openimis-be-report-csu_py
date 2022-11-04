@@ -487,9 +487,6 @@ def cs_in_use_query(date_from=None, date_to=None, **kwargs):
 def closed_cs_query(user, **kwargs):
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
-    location0 = kwargs.get("location0")
-    location1 = kwargs.get("location1")
-    location2 = kwargs.get("location2")
     hflocation = kwargs.get("hflocation")
 
     format = "%Y-%m-%d"
