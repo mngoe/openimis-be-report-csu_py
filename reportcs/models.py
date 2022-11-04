@@ -496,19 +496,13 @@ def closed_cs_query(user, **kwargs):
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
     
-    cloturer = Policy.objects.filter(
-        
-    )
-    
-    for status in cloturer:
-        policy = Policy.objects.filter(
-            status = 16
+    policy = Policy.objects.filter(
+            status = 8
         ).count()
-
+    print(policy)
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
-        "fosa":hflocation,
         "post": str(policy)
     }
     if hflocation and hflocation !="0":
