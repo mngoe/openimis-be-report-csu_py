@@ -360,31 +360,29 @@ def invoice_per_fosa_query(user, **kwargs):
 
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
-
-    total = Claim.objects.filter(
-        date_from__gte=date_from,
-        date_from__lte=date_to
-    )
-    for status in total:
-        claim1 = ClaimItem.objects.filter(
+  
+    claim1 = ClaimItem.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__gte = date_to,
             status = 1
     ).count()
-    for status in total:
-        claim2 = ClaimItem.objects.filter(
+    claim2 = ClaimItem.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__gte = date_to,
             status= 16
         ).count()
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
-        "fosa": hflocation,
         "post": str(claim1+claim2)
     }
-    if hflocation:
-        hflocation_str = HealthFacility.objects.filter(
-            code=hflocation,
-            validity_to__isnull=True
-            ).first().name
-        dictBase["fosa"] = hflocation_str
+    if hflocation and hflocation !="0":
+        hflocationObj = HealthFacility.objects.filter(
+            code = hflocation,
+            validity_to__isnull = True
+            ).first()
+        dictBase["fosa"] = hflocationObj.name
+
     return dictBase
 
 def expired_policies_query(date_from=None, date_to=None, **kwargs):
