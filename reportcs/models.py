@@ -6,6 +6,7 @@ from report.services import run_stored_proc_report
 from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
 from policy.models import Policy
+from django.db.models import Q
 from collections import defaultdict
 from django.db.models import Count
 import json
@@ -515,8 +516,8 @@ def closed_cs_query(user, **kwargs):
             validity_to__isnull = True
             ).first()
         dictBase["fosa"] = hflocationObj.name
+        dictBase['health_facility'] = hflocationObj.id
     return dictBase
-
 def severe_malaria_cost_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
