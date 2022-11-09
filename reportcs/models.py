@@ -6,7 +6,6 @@ from report.services import run_stored_proc_report
 from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
 from policy.models import Policy
-from django.db.models import Q
 from collections import defaultdict
 from django.db.models import Count
 import json
