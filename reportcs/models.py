@@ -6,6 +6,7 @@ from report.services import run_stored_proc_report
 from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
 from policy.models import Policy
+from django.db.models import Q
 from collections import defaultdict
 from django.db.models import Count
 import json
@@ -493,16 +494,17 @@ def closed_cs_query(user, **kwargs):
     
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
-    
+
     policyA = Policy.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__gte = date_to,
-        status = 4
+        validity_from__gte=date_from,
+        validity_to__lte=date_to,
+            status = 4,
         ).count()
+    
     policyB = Policy.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__gte = date_to,
-        status = 8
+        validity_from__gte=date_from,
+        validity_to__lte=date_to,
+            status = 8,
         ).count()
     dictBase = {
         "dateFrom": date_from_str,
@@ -510,11 +512,11 @@ def closed_cs_query(user, **kwargs):
         "post": str(policyA+policyB)
     }
     if hflocation and hflocation !="0":
-        hflocationObj = HealthFacility.objects.filter(
-            code = hflocation,
-            validity_to__isnull = True
+            hflocationObj = HealthFacility.objects.filter(
+             code = hflocation,
+             validity_to__isnull = True
             ).first()
-        dictBase["fosa"] = hflocationObj.name
+    dictBase["fosa"] = hflocationObj.name
     return dictBase
 
 def severe_malaria_cost_query(date_from=None, date_to=None, **kwargs):
