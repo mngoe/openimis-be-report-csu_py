@@ -496,12 +496,12 @@ def closed_cs_query(user, **kwargs):
     
     policyA = Policy.objects.filter(
         validity_from__gte = date_from,
-        validity_to__gte = date_to,
+        validity_to__lte = date_to,
         status = 4
         ).count()
     policyB = Policy.objects.filter(
         validity_from__gte = date_from,
-        validity_to__gte = date_to,
+        validity_to__lte = date_to,
         status = 8
         ).count()
     dictBase = {
