@@ -507,7 +507,14 @@ def closed_cs_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
-        dictGeo['health_facility'] = hflocationObj.id
+        dictGeo["health_facility"] = hflocationObj.audit_user_id
+
+
+    PolicyList = Policy.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__lte = date_to,
+        **dictGeo
+        )
 
     policyA = Policy.objects.filter(
             validity_from__gte = date_from,
@@ -521,6 +528,10 @@ def closed_cs_query(user, **kwargs):
             status = 8
         ).count()
     dictBase["post"]= str(policyA+policyB)
+
+    
+    print (dictBase)
+    print(dictGeo)
     return dictBase
 
 def severe_malaria_cost_query(date_from=None, date_to=None, **kwargs):
