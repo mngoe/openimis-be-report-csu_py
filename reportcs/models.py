@@ -349,6 +349,7 @@ def pregnant_woman_ref_rate_query(date_from=None, date_to=None, **kwargs):
     return {"data": list(queryset)}
 
 def invoice_per_fosa_query(user, **kwargs):
+
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     hflocation = kwargs.get("hflocation")
@@ -360,29 +361,52 @@ def invoice_per_fosa_query(user, **kwargs):
 
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
-  
-    claim1 = ClaimItem.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__gte = date_to,
-            status = 1
-    ).count()
-    claim2 = ClaimItem.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__gte = date_to,
-            status= 16
-        ).count()
+
+    
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
-        "post": str(claim1+claim2)
-    }
-    if hflocation and hflocation !="0":
+        }
+    dictGeo = {}
+    if hflocation and hflocation!="0" :
         hflocationObj = HealthFacility.objects.filter(
-            code = hflocation,
-            validity_to__isnull = True
+            code=hflocation,
+            validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
 
+        claimItem = Claim.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__lte = date_to,
+        **dictGeo,
+        status = 1
+        ).count()
+        claimItem1 = Claim.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__lte = date_to,
+        **dictGeo,
+        status = 2
+        ).count()
+        claimItem2 = Claim.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__lte = date_to,
+        **dictGeo,
+        status = 4
+        ).count()
+        claimItem3 = Claim.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__lte = date_to,
+        **dictGeo,
+        status = 8
+        ).count()
+        claimItem4 = Claim.objects.filter(
+        validity_from__gte = date_from,
+        validity_to__lte = date_to,
+        **dictGeo,
+        status = 16
+        ).count()
+        dictGeo['health_facility'] = hflocationObj.id
+        dictBase["post"]= str(claimItem+claimItem1+claimItem2+claimItem3+claimItem4)
     return dictBase
 
 def expired_policies_query(date_from=None, date_to=None, **kwargs):
@@ -462,7 +486,7 @@ def periodic_rejected_bills_query(user, **kwargs):
         dictGeo['health_facility'] = hflocationObj.id
         dictBase["post"]= str(claimItem)
     return dictBase
-    
+
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
     queryset = ()
     return {"data": list(queryset)}
