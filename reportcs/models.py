@@ -375,38 +375,13 @@ def invoice_per_fosa_query(user, **kwargs):
             ).first()
         dictBase["fosa"] = hflocationObj.name
 
-        claimItem = Claim.objects.filter(
+    claimItem = Claim.objects.values_list('status').filter(
         validity_from__gte = date_from,
         validity_to__lte = date_to,
-        **dictGeo,
-        status = 1
-        ).count()
-        claimItem1 = Claim.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
-        **dictGeo,
-        status = 2
-        ).count()
-        claimItem2 = Claim.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
-        **dictGeo,
-        status = 4
-        ).count()
-        claimItem3 = Claim.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
-        **dictGeo,
-        status = 8
-        ).count()
-        claimItem4 = Claim.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
-        **dictGeo,
-        status = 16
-        ).count()
-        dictGeo['health_facility'] = hflocationObj.id
-        dictBase["post"]= str(claimItem+claimItem1+claimItem2+claimItem3+claimItem4)
+        **dictGeo
+    ).count()
+    
+    dictBase["post"]= str(claimItem)
     return dictBase
 
 def expired_policies_query(date_from=None, date_to=None, **kwargs):
