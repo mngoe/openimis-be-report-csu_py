@@ -530,7 +530,7 @@ def closed_cs_query(user, **kwargs):
     dictBase["post"]= str(policyA+policyB)
 
     
-    print (dictBase)
+   
     print(dictGeo)
     return dictBase
 
