@@ -357,19 +357,18 @@ def assisted_birth_with_cs_query(user, **kwargs):
             **dictGeo,
         gender = 'F'
         ).count()
-        # data = Insuree.objects.filter(gender = 'F').count()
-        # data2 = Service.objects.filter(code = 'F4').count()
-        data = Service.objects.filter(code = 'F4').count() | Insuree.objects.filter(gender = 'F').count() 
-        # data1 = Insuree.objects.filter(gender = 'F').count() | Service.objects.filter(code = 'F4').count()  
-
-
-
-
+        # data = Service.objects.filter(code='F4', Insuree__gender='F').count()
+        # data = Service.objects.filter(code = 'F4').count() | Insuree.objects.filter(gender = 'F').count() 
+        # for data in  Service.objects.raw( SELECT Gender, ServCode
+        # FROM Insuree 
+        # JOIN Service ON insuree.audituserid = Service.audituserid
+        # WHERE Gender = 'F'
+        # AND ServCode = 'F4')
+        data = Insuree.objects.filter(gender = 'F').select_related(servcode='F4').count()
         dictGeo['health_facility'] = hflocationObj.id
+        print(data)
         dictBase["post"]= str(data)
         
-        
-        print(data)
     return dictBase
 
 def mother_cpon_with_cs_query(date_from=None, date_to=None, **kwargs):
