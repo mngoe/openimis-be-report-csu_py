@@ -351,23 +351,14 @@ def assisted_birth_with_cs_query(user, **kwargs):
             ).first()
         dictBase["fosa"] = hflocationObj.name
 
-        claimItem = Insuree.objects.filter(
+        claimItem = Service.objects.filter(
             validity_from__gte = date_from,
             validity_to__lte = date_to,
             **dictGeo,
-        gender = 'F'
+        code = 'F12'
         ).count()
-        # data = Service.objects.filter(code='F4', Insuree__gender='F').count()
-        # data = Service.objects.filter(code = 'F4').count() | Insuree.objects.filter(gender = 'F').count() 
-        # for data in  Service.objects.raw( SELECT Gender, ServCode
-        # FROM Insuree 
-        # JOIN Service ON insuree.audituserid = Service.audituserid
-        # WHERE Gender = 'F'
-        # AND ServCode = 'F4')
-        data = Insuree.objects.filter(gender = 'F').select_related(servcode='F4').count()
         dictGeo['health_facility'] = hflocationObj.id
-        print(data)
-        dictBase["post"]= str(data)
+        dictBase["post"]= str(claimItem)
         
     return dictBase
 
