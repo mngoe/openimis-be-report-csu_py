@@ -503,19 +503,11 @@ def cs_in_use_query(user, **kwargs):
         validity_from__gte = date_from,
         validity_to__lte = date_to,
         **dictGeo,
-            status= 1
-        ).count()
-        policy2 = Policy.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
-        **dictGeo,
             status= 2
         ).count()
 
         dictGeo['health_facility'] = hflocationObj.id
-        dictBase["post"]= str(policy1+policy2)
-        print (policy1)
-        print (policy2)
+        dictBase["post"]= str(policy1)
     return dictBase
 
 def closed_cs_query(user, **kwargs):
