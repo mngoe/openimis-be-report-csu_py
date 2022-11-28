@@ -374,14 +374,14 @@ def invoice_per_fosa_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
-
+        dictGeo['health_facility'] = hflocationObj.id
     claimItem = Claim.objects.values_list('status').filter(
         validity_from__gte = date_from,
         validity_to__lte = date_to,
         **dictGeo
     ).count()
     
-    dictBase["post"]= str(claimItem)
+    dictBase["post"]= str(claimItem) 
     return dictBase
 
 def expired_policies_query(date_from=None, date_to=None, **kwargs):
