@@ -452,14 +452,15 @@ def periodic_rejected_bills_query(user, **kwargs):
             ).first()
         dictBase["fosa"] = hflocationObj.name
 
-        claimItem = Claim.objects.filter(
+        dictGeo['health_facility'] = hflocationObj.id
+    claimItem = Claim.objects.values_list('status').filter(
         validity_from__gte = date_from,
         validity_to__lte = date_to,
         **dictGeo,
         status = 1
-        ).count()
-        dictGeo['health_facility'] = hflocationObj.id
-        dictBase["post"]= str(claimItem)
+    ).count()
+
+    dictBase["post"]= str(claimItem)
     return dictBase
 
 def periodic_household_participation_query(date_from=None, date_to=None, **kwargs):
