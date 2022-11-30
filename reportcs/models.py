@@ -451,11 +451,11 @@ def periodic_rejected_bills_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
-
         dictGeo['health_facility'] = hflocationObj.id
+   
     claimItem = Claim.objects.values_list('status').filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
+        date_claimed__gte = date_from,
+        date_claimed__lte = date_to,
         **dictGeo,
         status = 1
     ).count()
