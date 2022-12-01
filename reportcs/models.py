@@ -423,7 +423,6 @@ def periodic_paid_bills_query(user, **kwargs):
     ).count()
     
     dictBase["post"]= str(claimItem) 
-    print (claimItem)
     return dictBase
 def periodic_rejected_bills_query(user, **kwargs):
 
@@ -451,7 +450,7 @@ def periodic_rejected_bills_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
-        
+
         dictGeo['health_facility'] = hflocationObj.id
    
     claimItem = Claim.objects.values_list('status').filter(
