@@ -8,6 +8,7 @@ from location.models import Location, HealthFacility
 from policy.models import Policy
 from collections import defaultdict
 from django.db.models import Count
+from django.db.models import F
 import json
 import datetime
 
@@ -536,21 +537,23 @@ def closed_cs_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
+        # dictGeo['health_facility'] = hflocationObj.id
 
-        policyA = Policy.objects.filter(
+        policyA = Policy.objects.values_list('status').filter(
         validity_from__gte = date_from,
         validity_to__lte = date_to,
             **dictGeo,
             status = 4,
         ).count()
-        policyB = Policy.objects.filter(
+        policyB = Policy.objects.values_list('status').filter(
         validity_from__gte = date_from,
         validity_to__lte = date_to,
             **dictGeo,
             status = 8,
         ).count()
-        dictGeo['health_facility'] = hflocationObj.id
-        dictBase["post"]= str(policyA+policyB)
+        a = policyA+policyB
+        dictBase["post"]= str(a)
+        print (a)
     return dictBase
 
 def severe_malaria_cost_query(date_from=None, date_to=None, **kwargs):
