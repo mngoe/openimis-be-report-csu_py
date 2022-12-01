@@ -452,7 +452,6 @@ def periodic_rejected_bills_query(user, **kwargs):
         dictBase["fosa"] = hflocationObj.name
 
         dictGeo['health_facility'] = hflocationObj.id
-   
     claimItem = Claim.objects.values_list('status').filter(
         validity_from__gte = date_from,
         validity_to__lte = date_to,
