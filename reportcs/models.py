@@ -392,9 +392,6 @@ def periodic_paid_bills_query(user, **kwargs):
 
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
-    location0 = kwargs.get("location0")
-    location1 = kwargs.get("location1")
-    location2 = kwargs.get("location2")
     hflocation = kwargs.get("hflocation")
 
     format = "%Y-%m-%d"
@@ -404,26 +401,28 @@ def periodic_paid_bills_query(user, **kwargs):
 
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
-    
-    claimList = Claim.objects.filter(
-        date_from__gte=date_from,
-        date_from__lte=date_to
-        )
-    
-    for valuated in claimList:
 
-        claimItem = ClaimItem.objects.filter(
-            claim = valuated
-        ).count()
-
-   
-    dictBase =  {
+    
+    dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
-        "fosa": hflocation,
-        "nbvaluated": str(claimItem)
         }
+    dictGeo = {}
+    if hflocation and hflocation!="0" :
+        hflocationObj = HealthFacility.objects.filter(
+            code=hflocation,
+            validity_to__isnull=True
+            ).first()
+        dictBase["fosa"] = hflocationObj.name
+        dictGeo['health_facility'] = hflocationObj.id
+    claimItem = Claim.objects.values_list('status').filter(
+        date_claimed__gte = date_from,
+        date_claimed__lte = date_to,
+        status = 16 ,
+        **dictGeo
+    ).count()
     
+    dictBase["post"]= str(claimItem) 
     return dictBase
 def periodic_rejected_bills_query(user, **kwargs):
 
@@ -451,11 +450,11 @@ def periodic_rejected_bills_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
+
         dictGeo['health_facility'] = hflocationObj.id
-   
     claimItem = Claim.objects.values_list('status').filter(
-        date_claimed__gte = date_from,
-        date_claimed__lte = date_to,
+        validity_from__gte = date_from,
+        validity_to__lte = date_to,
         **dictGeo,
         status = 1
     ).count()
