@@ -8,6 +8,9 @@ from location.models import Location, HealthFacility
 from policy.models import Policy
 from collections import defaultdict
 from django.db.models import Count
+from django.db.models import F
+from insuree.models import Insuree
+from insuree.models import InsureePolicy
 import json
 import datetime
 
@@ -513,7 +516,6 @@ def cs_in_use_query(user, **kwargs):
 def closed_cs_query(user, **kwargs):
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
-    
     hflocation = kwargs.get("hflocation")
     format = "%Y-%m-%d"
 
@@ -523,33 +525,62 @@ def closed_cs_query(user, **kwargs):
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
 
-    
     dictBase = {
         "dateFrom": date_from_str,
         "dateTo": date_to_str,
         }
-    dictGeo = {}
-    if hflocation and hflocation!="0" :
-        hflocationObj = HealthFacility.objects.filter(
-            code=hflocation,
-            validity_to__isnull=True
-            ).first()
-        dictBase["fosa"] = hflocationObj.name
 
-        policyA = Policy.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
-            **dictGeo,
+    dictGeo = {}
+    if  hflocation and hflocation !="0" :
+        hflocationObj = HealthFacility.objects.values_list('name',flat=True).filter(
+            code=hflocation,
+            ).first()   
+        dictBase["fosa"] = str(hflocationObj)
+        dictGeo['health_facility'] = hflocationObj
+
+    hf = HealthFacility.objects.values_list('id',flat=True).filter(
+            code=hflocation,
+            )
+    list5 = list(hf)
+    
+
+    insuree = Insuree.objects.values_list('id', flat=True).filter(
+        health_facility_id__in = list5)
+    list3 = list(insuree)
+    
+
+    policy_insuree = InsureePolicy.objects.values_list('id', flat=True).filter(
+        policy_id__in = list3)
+    list2 = list(policy_insuree)
+
+    policy1 = Policy.objects.values_list('status', flat=True).filter(
+        id__in = list2,
+        start_date__gte=date_from,
+        expiry_date__lte=date_to,
+        status = 4,
+    ).count()
+    policy2 = Policy.objects.values_list('status', flat=True).filter(
+        id__in = list2,
+        start_date__gte=date_from,
+        expiry_date__lte=date_to,
+        status = 8,
+    ).count()
+
+    if hflocation and hflocation =="0" :
+        policy1 = Policy.objects.filter(
             status = 4,
+            start_date__gte=date_from,
+            expiry_date__lte=date_to
         ).count()
-        policyB = Policy.objects.filter(
-        validity_from__gte = date_from,
-        validity_to__lte = date_to,
-            **dictGeo,
+
+        policy2 = Policy.objects.filter(
             status = 8,
+            start_date__gte=date_from,
+            expiry_date__lte=date_to
         ).count()
-        dictGeo['health_facility'] = hflocationObj.id
-        dictBase["post"]= str(policyA+policyB)
+   
+    dictBase["post"]= str(policy1+policy2)
+    print(list2)
     return dictBase
 
 def severe_malaria_cost_query(date_from=None, date_to=None, **kwargs):
