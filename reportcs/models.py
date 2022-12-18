@@ -51,11 +51,14 @@ def invoice_cs_query(user, **kwargs):
         dictGeo['health_facility'] = hflocationObj.id
     
     ## Get All claim corresponding to parameter sent
-    claimList = Claim.objects.filter(
+    claimList = Claim.objects.exclude(
+        status=1
+    ).filter(
         date_from__gte=date_from,
         date_from__lte=date_to,
+        validity_to__isnull=True,
         **dictGeo
-        )
+    )
 
     invoiceElemtList = defaultdict(dict)
     invoiceElemtTotal = defaultdict(int)
@@ -67,7 +70,8 @@ def invoice_cs_query(user, **kwargs):
     for cclaim in claimList:
         #First we calculate on each Service inside a
         claimService = ClaimService.objects.filter(
-            claim = cclaim
+            claim = cclaim,
+            status=1
         )
         for claimServiceElmt in claimService:
             invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
@@ -114,7 +118,7 @@ def invoice_cs_query(user, **kwargs):
                     for claimSiElement in claimSi:
                         tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
                         #print(tarifLocal)
-                    print(type(tarifLocal))
+                    #print(type(tarifLocal))
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
             
             
@@ -128,7 +132,8 @@ def invoice_cs_query(user, **kwargs):
 
         #Then we calculate on each Item inside a claim
         claimItem = ClaimItem.objects.filter(
-            claim = cclaim
+            claim = cclaim,
+            status=1
         )
         for claimItemElmt in claimItem:
             if claimItemElmt.service.id not in invoiceElemtList[claimItemElmt.service.packagetype]:
