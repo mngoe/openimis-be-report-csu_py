@@ -61,7 +61,6 @@ def invoice_cs_query(user, **kwargs):
 
 
     for cclaim in claimList:
-
         #First we calculate on each Service inside a
         claimService = ClaimService.objects.filter(
             claim = cclaim
