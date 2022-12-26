@@ -93,7 +93,6 @@ def invoice_cs_query(user, **kwargs):
                     claimServiceElmt.price_valuated = 0
                 
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-    
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
 
@@ -157,8 +156,17 @@ def invoice_cs_query(user, **kwargs):
             invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnNotValideV"] = invoiceElemtTotal[claimItemElmt.service.packagetype+"MontantRecueTotal"] - invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValide"]
             
             invoiceElemtTotal["QtyTotalV"] += claimItemElmt.qty_provided
-        
-    print ("{:<5} {:<5} {:<30} {:<10} {:<10} {:<10} {:<10}".format('type','id','name','Code','tarif','qty', 'Montant Recus'))
+    
+    invoiceElemtTotal["PQtyValuatedV"]=0
+    invoiceElemtTotal["PMontantRecueTotalV"] = 0
+    invoiceElemtTotal["PMtnNotValideV"] = 0
+    invoiceElemtTotal["PMtnValideV"] = 0
+    invoiceElemtTotal["FMontantRecueTotalV"] = 0
+    invoiceElemtTotal["FQtyValuatedV"] = 0
+    invoiceElemtTotal["FMtnNotValideV"] = 0
+    invoiceElemtTotal["FMtnValideV"] = 0
+
+    print ("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<20}".format('type','id','name','Code','tarif','qty', 'Montant Recus','Qty Validated'))
     for typeList,v in invoiceElemtList.items():
         for id in v:
             if typeList=="P":
@@ -212,13 +220,13 @@ def invoice_cs_query(user, **kwargs):
                 invoiceElemtTotal["SMtnNotValideV"] += v[id]['MontantRecue'] - v[id]['qty']['sum']
                 invoiceElemtTotal["SMtnValideV"] += v[id]['qty']['sum']
 
-            print("{:<5} {:<5} {:<30} {:<10} {:<10} {:<10} {:<10} {:<10}".format(
+            print("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<10}".format(
                 typeList, id, v[id]['name'], v[id]['code'], v[id]['tarif'],v[id]['qty']['all'], v[id]['MontantRecue'],v[id]['qty']['valuated']
                 ))
 
     ## Calcaulating of each invoiceElemtTotal
     invoiceElemtTotal["NbFactureValideTotal"] = invoiceElemtTotal["FQtyValuatedV"] + invoiceElemtTotal["SQtyValuatedV"] + invoiceElemtTotal["PQtyValuatedV"]
-    invoiceElemtTotal["NbFactureValideTotal"] = "{:,.0f}".format(invoiceElemtTotal["NbFactureValideTotalV"])
+    invoiceElemtTotal["NbFactureValideTotal"] = "{:,.0f}".format(invoiceElemtTotal["NbFactureValideTotal"])
     invoiceElemtTotal["FQtyValuated"] = "{:,.0f}".format(invoiceElemtTotal["FQtyValuatedV"])
     invoiceElemtTotal["SQtyValuated"] = "{:,.0f}".format(invoiceElemtTotal["SQtyValuatedV"])
     invoiceElemtTotal["PQtyValuated"] = "{:,.0f}".format(invoiceElemtTotal["PQtyValuatedV"])
@@ -247,7 +255,7 @@ def invoice_cs_query(user, **kwargs):
     dictBase["prestationsNonMedicales"] = invoiceElemtListS
     dictBase["invoiceElemtTotal"] = invoiceElemtTotal
 
-    print(dictBase)
+    print(dictBase["invoiceElemtTotal"])
 
     if location0:
         location0_str = Location.objects.filter(
