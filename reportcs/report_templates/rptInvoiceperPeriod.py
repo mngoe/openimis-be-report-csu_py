@@ -3391,7 +3391,7 @@ template = """\
                   "elementType":"table_text",
                   "id":338,
                   "width":130,
-                  "content":"2. Prestations plafonnées",
+                  "content":"2. Prestations plafonnées (Tarif max)",
                   "eval":false,
                   "colspan":"7",
                   "styleId":"",
