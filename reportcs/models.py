@@ -171,6 +171,11 @@ def invoice_cs_query(user, **kwargs):
     invoiceElemtTotal["FQtyValuatedV"] = 0
     invoiceElemtTotal["FMtnNotValideV"] = 0
     invoiceElemtTotal["FMtnValideV"] = 0 
+    invoiceElemtTotal["SQtyValuatedV"] = 0
+    invoiceElemtTotal["SMontantRecueTotalV"] = 0
+    invoiceElemtTotal["SMtnNotValideV"] = 0
+    invoiceElemtTotal["SMtnValideV"] = 0
+    
     print ("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<20}".format('type','id','name','Code','tarif','qty', 'Montant Recus','Qty Validated'))
     for typeList,v in invoiceElemtList.items():
         for id in v:
