@@ -7,14 +7,14 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='openimis_be_report_cs',
-    version='0.1.3',
+    name='openimis_be_report_csu',
+    version='0.1.0',
     packages=find_packages(),
     include_package_data=True,
     license='GNU AGPL v3',
     description='The openIMIS backend Cameroonian cheque Sante reference module.',
     url='https://openimis.org',
-    author='Francine MADOH',
+    author='Maxime NGOE',
     author_email='francinemadoh@gmail.com',
     install_requires=[
         'django',
