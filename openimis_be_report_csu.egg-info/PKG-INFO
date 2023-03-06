@@ -1,11 +1,12 @@
 Metadata-Version: 2.1
-Name: openimis-be-report-cs
-Version: 0.1.3
+Name: openimis-be-report-csu
+Version: 0.1.0
 Summary: The openIMIS backend Cameroonian cheque Sante reference module.
 Home-page: https://openimis.org
-Author: Francine MADOH
+Author: Maxime NGOE
 Author-email: francinemadoh@gmail.com
 License: GNU AGPL v3
+Platform: UNKNOWN
 Classifier: Environment : : Web Environment
 Classifier: Framework :: Django
 Classifier: Framework :: Django
@@ -16,5 +17,7 @@ Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
-Classifier: Programming Language :: Python :: 3.8
 License-File: LICENCE.md
+
+UNKNOWN
+
