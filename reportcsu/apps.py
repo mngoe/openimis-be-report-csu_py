@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class ReportcsConfig(AppConfig):
+class ReportcsuConfig(AppConfig):
     name = 'reportcsu'
