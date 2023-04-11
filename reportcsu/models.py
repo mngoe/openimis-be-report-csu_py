@@ -135,34 +135,34 @@ def invoice_csu_query(user, **kwargs):
             invoiceElemtTotal["QtyTotalV"] += int(claimServiceElmt.qty_provided)
 
         #Then we calculate on each Item inside a claim
-        claimItem = ClaimItem.objects.filter(
-            claim = cclaim,
-            status=1
-        )
-        for claimItemElmt in claimItem:
-            if claimItemElmt.service.id not in invoiceElemtList[claimItemElmt.service.packagetype]:
-                invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id] = defaultdict(int)
+        # claimItem = ClaimItem.objects.filter(
+        #     claim = cclaim,
+        #     status=1
+        # )
+        # for claimItemElmt in claimItem:
+        #     if claimItemElmt.service.id not in invoiceElemtList[claimItemElmt.service.packagetype]:
+        #         invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id] = defaultdict(int)
 
-            if cclaim.status == "16":
-                invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['valuated'] += claimItemElmt.qty_provided
+        #     if cclaim.status == "16":
+        #         invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['valuated'] += claimItemElmt.qty_provided
 
-            invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["name"] = claimItemElmt.service.name
-            invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["code"] = claimItemElmt.service.code
-            invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["tarif"] = claimItemElmt.price_asked
-            invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]["all"] += claimItemElmt.qty_provided
-            invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["MontantRecue"] += invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['all'] * invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["tarif"]            
+        #     invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["name"] = claimItemElmt.service.name
+        #     invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["code"] = claimItemElmt.service.code
+        #     invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["tarif"] = claimItemElmt.price_asked
+        #     invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]["all"] += claimItemElmt.qty_provided
+        #     invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["MontantRecue"] += invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['all'] * invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["tarif"]            
             
-            if claimServiceElmt.service.packagetype not in invoiceElemtTotal :
-                invoiceElemtTotal[claimServiceElmt.service.packagetype] = defaultdict(int)
+        #     if claimServiceElmt.service.packagetype not in invoiceElemtTotal :
+        #         invoiceElemtTotal[claimServiceElmt.service.packagetype] = defaultdict(int)
 
-            invoiceElemtTotal[claimItemElmt.service.packagetype+"QtyTotalV"] += claimItemElmt.qty_provided
-            invoiceElemtTotal[claimItemElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['valuated'])
-            invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValideV"] += invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['sum']
-            MtnNotValideV = 0
-            if invoiceElemtTotal[claimItemElmt.service.packagetype+"MontantRecueTotal"] - invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValide"] > 0:
-                MtnNotValideV = invoiceElemtTotal[claimItemElmt.service.packagetype+"MontantRecueTotal"] - invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValide"]
-            invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnNotValideV"] = MtnNotValideV
-            invoiceElemtTotal["QtyTotalV"] += claimItemElmt.qty_provided
+        #     invoiceElemtTotal[claimItemElmt.service.packagetype+"QtyTotalV"] += claimItemElmt.qty_provided
+        #     invoiceElemtTotal[claimItemElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['valuated'])
+        #     invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValideV"] += invoiceElemtList[claimItemElmt.service.packagetype][claimItemElmt.service.id]["qty"]['sum']
+        #     MtnNotValideV = 0
+        #     if invoiceElemtTotal[claimItemElmt.service.packagetype+"MontantRecueTotal"] - invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValide"] > 0:
+        #         MtnNotValideV = invoiceElemtTotal[claimItemElmt.service.packagetype+"MontantRecueTotal"] - invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnValide"]
+        #     invoiceElemtTotal[claimItemElmt.service.packagetype+"MtnNotValideV"] = MtnNotValideV
+        #     invoiceElemtTotal["QtyTotalV"] += claimItemElmt.qty_provided
     
     invoiceElemtTotal["PQtyValuatedV"]=0
     invoiceElemtTotal["PMontantRecueTotalV"] = 0
@@ -178,6 +178,7 @@ def invoice_csu_query(user, **kwargs):
     invoiceElemtTotal["SMtnValideV"] = 0
     
     print ("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<20}".format('type','id','name','Code','tarif','qty', 'Montant Recus','Qty Validated'))
+    print("invoiceElemtList ", invoiceElemtList)
     for typeList,v in invoiceElemtList.items():
         for id in v:
             montantNonValide = 0
