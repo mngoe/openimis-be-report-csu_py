@@ -1,7 +1,7 @@
 from distutils.command import upload
-from reportcsu.models import invoice_csu_query, invoice_hiv_query
+from reportcsu.models import invoice_csu_query, invoice_hiv_query, invoice_declaration_naissance_query
 
-from reportcsu.report_templates import rptInvoicePerFosa, rptInvoiceReportHIV
+from reportcsu.report_templates import rptInvoicePerFosa, rptInvoiceReportHIV, rptInvoiceDnPerFosa
 
 report_definitions = [ 
     {
@@ -21,5 +21,14 @@ report_definitions = [
         "module": "reportcsu",
         "python_query": invoice_hiv_query, 
         "permission": ["131215"],
-    }
+    },
+    {
+        "name": "invoice_fosa_DNBD",
+        "engine": 0,
+        "default_report": rptInvoiceDnPerFosa.template,
+        "description": "Etat de paiement par fosa Declaration Naissance",
+        "module": "reportcsu",
+        "python_query": invoice_declaration_naissance_query, 
+        "permission": ["131215"],
+    },
 ]
