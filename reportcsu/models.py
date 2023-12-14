@@ -91,7 +91,7 @@ def invoice_csu_query(user, **kwargs):
     programs = program_models.Program.objects.filter(
         validityDateFrom__lte=today).filter(
         Q(validityDateTo__isnull=True) | Q(validityDateTo__gte=today)
-        ).exclude(code='DNDB').order_by('-idProgram')[:5]
+        ).exclude(code='DNB').order_by('-idProgram')[:5]
     
     program_ids = []
     for prg in programs:
