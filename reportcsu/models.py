@@ -147,7 +147,7 @@ def invoice_csu_query(user, **kwargs):
             claimService = ClaimService.objects.filter(
                 claim = cclaim,
                 status=1
-            )
+            ).filter(validity_to__is_null=True)
             for claimServiceElmt in claimService:
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] = 0
@@ -599,7 +599,7 @@ def invoice_hiv_query(user, **kwargs):
             claimService = ClaimService.objects.filter(
                 claim = cclaim,
                 status=1
-            )
+            ).filter(validity_to__is_null=True)
             for claimServiceElmt in claimService:
                 if claimServiceElmt.service:
                     if claimServiceElmt.service.program:
@@ -742,7 +742,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
             claimService = ClaimService.objects.filter(
                 claim = cclaim,
                 status=1
-            )
+            ).filter(validity_to__is_null=True)
             for claimServiceElmt in claimService:
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] = 0
