@@ -17,6 +17,9 @@ import json
 import datetime
 from program import models as program_models
 import time
+from datetime import timedelta
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
 
 val_de_zero = [
@@ -166,7 +169,6 @@ def invoice_csu_query(user, **kwargs):
                     if claimServiceElmt.price_valuated == None :
                         claimServiceElmt.price_valuated = 0
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
 
@@ -249,7 +251,6 @@ def invoice_csu_query(user, **kwargs):
         invoiceElemtTotal["SMontantRecueTotalV"] = 0
         invoiceElemtTotal["SMtnNotValideV"] = 0
         invoiceElemtTotal["SMtnValideV"] = 0
-        
         # print ("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<20}".format('type','id','name','Code','tarif','qty', 'Montant Recus','Qty Validated'))
         # print("invoiceElemtList ", invoiceElemtList)
         for typeList,v in invoiceElemtList.items():
@@ -660,14 +661,12 @@ def invoice_hiv_query(user, **kwargs):
 
 
 def invoice_declaration_naissance_query(user, **kwargs):
-    print("BBBB")
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     location0 = kwargs.get("location0")
     location1 = kwargs.get("location1")
     location2 = kwargs.get("location2")
     hflocation = kwargs.get("hflocation")
-    
     format = "%Y-%m-%d"
 
     date_from_object = datetime.datetime.strptime(date_from, format)
@@ -697,6 +696,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
         Q(validityDateTo__isnull=True) | Q(validityDateTo__gte=today)
         ).filter(code='DNB').order_by('-idProgram')[:5]
     
+    print("programs", programs)
     program_ids = []
     for prg in programs:
         program_ids.append(prg)
@@ -721,7 +721,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
         statusExcluded = [1, 2]
         value = program.idProgram if program != 0 else 0
         claimList = Claim.objects.exclude(
-            status__in=statusExcluded
+            status__in=statusExcluded,date_from__gt=F('date_to') + timedelta(days=30)
         ).filter(
             date_to__gte=date_from,
             date_to__lte=date_to,
@@ -729,7 +729,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
             program=value,
             **dictGeo
         )
-
+        print("claimList", claimList)
         invoiceElemtList = defaultdict(dict)
         invoiceElemtTotal = defaultdict(int)
         invoiceElemtListP = []
@@ -761,7 +761,14 @@ def invoice_declaration_naissance_query(user, **kwargs):
                     if claimServiceElmt.price_valuated == None :
                         claimServiceElmt.price_valuated = 0
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-
+                    sum_code = Service.objects.filter(code="VIH1").count()
+                    if claimServiceElmt.qty_provided == sum_code:
+                        invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += (invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] * 1.1)
+                   
+                    print("ID------------------------:", claimServiceElmt.service.id)
+                    print("sum_code------------------",sum_code)
+                    print("QTY------------------------",claimServiceElmt.qty_provided )
+                    print("MONTANT VALIDE-------------",invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
 
