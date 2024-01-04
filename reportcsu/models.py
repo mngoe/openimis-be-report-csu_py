@@ -956,3 +956,94 @@ def invoice_declaration_naissance_query(user, **kwargs):
             ).first().name
         dictBase["area"] = location2_str
     return dictBase
+
+
+def invoice_district_query(user, **kwargs):
+    date_from = kwargs.get("date_from")
+    date_to = kwargs.get("date_to")
+    district = kwargs.get("district")
+    
+    format = "%Y-%m-%d"
+
+    date_from_object = datetime.datetime.strptime(date_from, format)
+    date_from_str = date_from_object.strftime("%Y/%m/%d")
+
+    date_to_object = datetime.datetime.strptime(date_to, format)
+    date_to_str = date_to_object.strftime("%d/%m/%Y")
+
+    facility_data = []
+    dictBase = {
+    }
+    grand_total = 0
+
+    # Get the district
+    if district and district!="0" :
+        district_obj = Location.objects.filter(
+            code=district,
+            validity_to__isnull=True
+        ).first()
+        dictBase["district"] = district_obj.name
+
+        my_dict = {
+            "01": "January",
+            "02": "Febuary",
+            "03": "March",
+            "04": "April",
+            "05": "May",
+            "06": "June",
+            "07": "July",
+            "08": "August",
+            "09": "September",
+            "10": "October",
+            "11": "November",
+            "12": "December"
+        }
+        mois = date_from_str.split("/")[1]
+        value = my_dict.get(mois)
+        annee_mois = date_from_str.split("/")[0] + date_from_str.split("/")[1]
+        dictBase["libelle"] = annee_mois.replace("/", "") + "-" + district_obj.name
+        dictBase["periode"] = value + " " + date_from_str.split("/")[0]
+
+        all_health_facilities = HealthFacility.objects.filter(
+            location_id=district_obj.id,
+            validity_to__isnull=True
+        )
+        statusExcluded = [1, 2]
+        for facility in all_health_facilities:
+            claimList = Claim.objects.exclude(
+                status__in=statusExcluded
+            ).filter(
+                date_to__gte=date_from,
+                date_to__lte=date_to,
+                validity_to__isnull=True,
+                health_facility_id=facility.id
+            )
+            claims = []
+            total = 0
+            for claim in claimList:
+                claims.append(claim.id)
+                claimService = ClaimService.objects.filter(
+                    claim = claim,
+                    status=1
+                )
+                for claimServiceElmt in claimService:
+                    if claimServiceElmt.price_valuated:
+                        total+=claimServiceElmt.price_valuated
+                    elif claimServiceElmt.price_approved:
+                        total+=claimServiceElmt.price_approved
+                    elif claimServiceElmt.price_adjusted:
+                        total+=claimServiceElmt.price_adjusted
+                    elif claimServiceElmt.price_asked:
+                        total+=claimServiceElmt.price_asked
+            grand_total += total
+            values = {
+                "Facilityname": facility.name,
+                "BankName": facility.bank_name,
+                "BankAcc": facility.acc_code,
+                "TotalAmount": str("{:,.0f}".format(total))
+            }
+            facility_data.append(values)
+    dictBase["datas"] = facility_data
+    dictBase["Total"] = str("{:,.0f}".format(grand_total))
+    print(dictBase)
+    return dictBase
