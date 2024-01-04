@@ -31,4 +31,13 @@ report_definitions = [
         "python_query": invoice_declaration_naissance_query, 
         "permission": ["131215"],
     },
+    {
+        "name": "invoice_district_csu",
+        "engine": 0,
+        "default_report": rptInvoiceDnPerFosa.template,
+        "description": "Etat de paiement par District",
+        "module": "reportcsu",
+        "python_query": invoice_declaration_naissance_query, 
+        "permission": ["131215"],
+    },
 ]
