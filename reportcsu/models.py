@@ -756,18 +756,22 @@ def invoice_declaration_naissance_query(user, **kwargs):
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] = claimServiceElmt.service.code
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"] = claimServiceElmt.service.price
                 ## Status Valuated of Claim
+               
                 if cclaim.status==16:
+                    print("status",cclaim.status)
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
                     if claimServiceElmt.price_valuated == None :
                         claimServiceElmt.price_valuated = 0
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-                    sum_code = Service.objects.filter(code="VIH1").count()
-                    if claimServiceElmt.qty_provided == sum_code:
+                    sum_code_birthday = Service.objects.filter(code="VIH1").count()
+                    sum_code_death = Service.objects.filter(code="VIH12").count()
+                    global_sum_birthday_and_death = sum_code_birthday + sum_code_death
+                    if sum(claimServiceElmt.qty_provided) == global_sum_birthday_and_death:
                         invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += (invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] * 1.1)
                    
                     print("ID------------------------:", claimServiceElmt.service.id)
-                    print("sum_code------------------",sum_code)
                     print("QTY------------------------",claimServiceElmt.qty_provided )
+                    print("global_sum_birthday_and_death------------------",global_sum_birthday_and_death)
                     print("MONTANT VALIDE-------------",invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
@@ -899,7 +903,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
         invoiceElemtTotal["FQtyTotal"] = "{:,.0f}".format(invoiceElemtTotal["FQtyTotalV"])
         invoiceElemtTotal["SQtyTotal"] = "{:,.0f}".format(invoiceElemtTotal["SQtyTotalV"])
         invoiceElemtTotal["PQtyTotal"] = "{:,.0f}".format(invoiceElemtTotal["PQtyTotalV"])
-
+                                                                                               
         invoiceElemtTotal["MtnValideTotal"] = "{:,.0f}".format(invoiceElemtTotal["FMtnValideV"]+invoiceElemtTotal["SMtnValideV"]+invoiceElemtTotal["PMtnValideV"])
         invoiceElemtTotal_MtnValideTotal += invoiceElemtTotal["FMtnValideV"]+invoiceElemtTotal["SMtnValideV"]+invoiceElemtTotal["PMtnValideV"]
         invoiceElemtTotal["FMtnValide"] = "{:,.0f}".format(invoiceElemtTotal["FMtnValideV"])
