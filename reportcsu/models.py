@@ -17,7 +17,7 @@ import json
 import datetime
 from program import models as program_models
 import time
-
+import calendar
 
 val_de_zero = [
     'million', 'milliard', 'billion',
@@ -962,14 +962,15 @@ def invoice_district_query(user, **kwargs):
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     district = kwargs.get("district")
-    
-    format = "%Y-%m-%d"
+    format = "%Y-%m"
 
     date_from_object = datetime.datetime.strptime(date_from, format)
-    date_from_str = date_from_object.strftime("%Y/%m/%d")
+    date_from_str = date_from_object.strftime("%Y/%m")
 
     date_to_object = datetime.datetime.strptime(date_to, format)
-    date_to_str = date_to_object.strftime("%d/%m/%Y")
+    days_in_month = calendar.monthrange(date_to_object.year, date_to_object.month)[1]
+    print("days_in_month ", days_in_month)
+    date_to_str = date_to_object.strftime("%Y/%m")
 
     facility_data = []
     dictBase = {
@@ -998,8 +999,8 @@ def invoice_district_query(user, **kwargs):
             "11": "November",
             "12": "December"
         }
-        mois = date_from_str.split("/")[1]
-        value = my_dict.get(mois)
+        mois_debut = date_from_str.split("/")[1]
+        value = my_dict.get(mois_debut)
         annee_mois = date_from_str.split("/")[0] + date_from_str.split("/")[1]
         dictBase["libelle"] = annee_mois.replace("/", "") + "-" + district_obj.name
         dictBase["periode"] = value + " " + date_from_str.split("/")[0]
@@ -1013,15 +1014,13 @@ def invoice_district_query(user, **kwargs):
             claimList = Claim.objects.exclude(
                 status__in=statusExcluded
             ).filter(
-                date_to__gte=date_from,
-                date_to__lte=date_to,
+                date_to__gte=date_from + "-01", # Premier our de la période
+                date_to__lte=date_to + "-" + str(days_in_month), #Dernier jour de la période
                 validity_to__isnull=True,
                 health_facility_id=facility.id
             )
-            claims = []
             total = 0
             for claim in claimList:
-                claims.append(claim.id)
                 claimService = ClaimService.objects.filter(
                     claim = claim,
                     status=1
