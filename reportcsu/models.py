@@ -687,7 +687,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
-        dictGeo['health_facility'] = hflocationObj.id
+        # dictGeo['health_facility'] = hflocationObj.id
     
     # Get all 5 Programs
     today = datetime.datetime.now()
@@ -696,11 +696,12 @@ def invoice_declaration_naissance_query(user, **kwargs):
         Q(validityDateTo__isnull=True) | Q(validityDateTo__gte=today)
         ).filter(code='DNB').order_by('-idProgram')[:5]
     
-    print("programs", programs)
+    print("programs 3-----------------", programs)
     program_ids = []
     for prg in programs:
         program_ids.append(prg)
     number = len(program_ids)
+    print("Program identifiable-------------------",program_ids.append(prg))
     # Complete to 5 elements if the result is less than 5
     while number < 5:
         program_ids.append(0)
@@ -743,6 +744,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
                 claim = cclaim,
                 status=1
             )
+            print("cclaim  service************************ ", claimService)
             for claimServiceElmt in claimService:
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
                 invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] = 0
@@ -763,15 +765,17 @@ def invoice_declaration_naissance_query(user, **kwargs):
                     if claimServiceElmt.price_valuated == None :
                         claimServiceElmt.price_valuated = 0
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-                    sum_code_birthday = Service.objects.filter(code="VIH1").count()
-                    sum_code_death = Service.objects.filter(code="VIH12").count()
+                    sum_code_birthday = Service.objects.filter(code="VIH1000000").count()
+                    sum_code_death = Service.objects.filter(code="DNB").count()
                     global_sum_birthday_and_death = sum_code_birthday + sum_code_death
-                    if sum(claimServiceElmt.qty_provided) == global_sum_birthday_and_death:
+                    if claimServiceElmt.qty_provided == global_sum_birthday_and_death:
                         invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += (invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] * 1.1)
                    
                     print("ID------------------------:", claimServiceElmt.service.id)
                     print("QTY------------------------",claimServiceElmt.qty_provided )
                     print("global_sum_birthday_and_death------------------",global_sum_birthday_and_death)
+                    print("sum_code_birthday------------------",sum_code_birthday)
+                    print("sum_code_death------------------",sum_code_death)
                     print("MONTANT VALIDE-------------",invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
@@ -828,6 +832,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
         
         # print ("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<20}".format('type','id','name','Code','tarif','qty', 'Montant Recus','Qty Validated'))
         # print("invoiceElemtList ", invoiceElemtList)
+        print("invoiceElemtList--------------------- ",invoiceElemtList)
         for typeList,v in invoiceElemtList.items():
             for id in v:
                 montantNonValide = 0
@@ -945,7 +950,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
     dictBase["MontnRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MontantRecueTotal)
     dictBase["MtnValideTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal)
     
-    # print(dictBase)
+    print(dictBase)
 
     if location0:
         location0_str = Location.objects.filter(
