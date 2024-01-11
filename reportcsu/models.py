@@ -687,7 +687,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
             validity_to__isnull=True
             ).first()
         dictBase["fosa"] = hflocationObj.name
-        # dictGeo['health_facility'] = hflocationObj.id
+        dictGeo['health_facility'] = hflocationObj.id
     
     # Get all 5 Programs
     today = datetime.datetime.now()
@@ -701,7 +701,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
     for prg in programs:
         program_ids.append(prg)
     number = len(program_ids)
-    print("Program identifiable-------------------",program_ids.append(prg))
+    print("Program identifiable-------------------")
     # Complete to 5 elements if the result is less than 5
     while number < 5:
         program_ids.append(0)
@@ -727,7 +727,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
             date_to__gte=date_from,
             date_to__lte=date_to,
             validity_to__isnull=True,
-            program=value,
+            # program=value,
             **dictGeo
         )
         print("claimList", claimList)
@@ -760,25 +760,45 @@ def invoice_declaration_naissance_query(user, **kwargs):
                 ## Status Valuated of Claim
                
                 if cclaim.status==16:
-                    print("status",cclaim.status)
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
                     if claimServiceElmt.price_valuated == None :
                         claimServiceElmt.price_valuated = 0
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-                    sum_code_birthday = Service.objects.filter(code="VIH1000000").count()
-                    sum_code_death = Service.objects.filter(code="DNB").count()
-                    global_sum_birthday_and_death = sum_code_birthday + sum_code_death
-                    if claimServiceElmt.qty_provided == global_sum_birthday_and_death:
-                        invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += (invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] * 1.1)
+                    
+                    print("status",cclaim.status)
+                    # sum_code_birthday = Service.objects.filter(code="dob").count()
+                    # sum_code_death = Service.objects.filter(code="death").count()
+                    # global_sum_birthday_and_death = sum_code_birthday + sum_code_death
+                    
+                    dob = 0
+                    death = 0
+
+                    # for invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in invoiceElemtList:
+
+                    #     if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] == "p1" :
+                    #         dob += 1
+                    # for invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in invoiceElemtList:
+
+                    #     if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] == "hemo1" :
+                    #         death += 1
+                    # dob = Service.objects.filter(code="VIH3").count()
+                    # death = Service.objects.filter(code="VIH1").count()
+
+                    global_sum_birthday_and_death = dob + death
+                    
+                    if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] == "Hemo1" :
+                        dob =+ 1
+                    if claimServiceElmt.qty_provided ==  dob:
+                        invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] * 1.1)
                    
                     print("ID------------------------:", claimServiceElmt.service.id)
                     print("QTY------------------------",claimServiceElmt.qty_provided )
+                    print("dob", dob)
+                    print("death", death)
                     print("global_sum_birthday_and_death------------------",global_sum_birthday_and_death)
-                    print("sum_code_birthday------------------",sum_code_birthday)
-                    print("sum_code_death------------------",sum_code_death)
                     print("MONTANT VALIDE-------------",invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
-                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
+                    # invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
 
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] += claimServiceElmt.qty_provided
                 ## Specific Rules for Montant Recue (for different type of package)
