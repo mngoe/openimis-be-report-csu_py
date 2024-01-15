@@ -789,13 +789,14 @@ def invoice_declaration_naissance_query(user, **kwargs):
                     if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] == "Hemo1" :
                         dob =+ 1
                     if claimServiceElmt.qty_provided ==  dob:
-                        invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] * 1.1)
-                   
+                        invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] + (invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum']* 0.1))
+                    
                     print("ID------------------------:", claimServiceElmt.service.id)
                     print("QTY------------------------",claimServiceElmt.qty_provided )
                     print("dob", dob)
                     print("death", death)
                     print("global_sum_birthday_and_death------------------",global_sum_birthday_and_death)
+                    print("MONTANT RECUE",  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"])
                     print("MONTANT VALIDE-------------",invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                     # invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
@@ -803,6 +804,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] += claimServiceElmt.qty_provided
                 ## Specific Rules for Montant Recue (for different type of package)
                 if claimServiceElmt.service.packagetype == "S":
+                    print("=======montant recu=========")
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"]
                 else :
                     # Desactivation du controle sur ManualPrice
