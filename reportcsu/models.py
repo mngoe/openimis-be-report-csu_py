@@ -769,9 +769,9 @@ def invoice_declaration_naissance_query(user, **kwargs):
                     print('servcode',  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"])
                     dob = 0
                     death = 0
-                    if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "ACCHT", "DNCSI" ,"DNCMA", "DNHD/HR"]: 
+                    if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "ACCHT", "DNCSI" ,"DNCMA", "DNHDHR"]: 
                         dob += 1
-                    if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "DDCSI", "DDCMA", "DDHD/HR"]:
+                    if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "DDCSI", "DDCMA", "DDHDHR"]:
                         death += 1
                     if  invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] ==  dob + death : 
                     # if  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] ==  dob + death :
