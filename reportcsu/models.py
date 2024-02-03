@@ -710,6 +710,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
 
     invoiceElemtTotal_MontantRecueTotal = 0
     invoiceElemtTotal_MtnValideTotal = 0
+    invoiceElemtTotal_MtnPrimeTotal = 0
     i = 1
     for program in program_ids:
         dictBase.update({
@@ -752,12 +753,15 @@ def invoice_declaration_naissance_query(user, **kwargs):
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id] = defaultdict(dict)
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"] = defaultdict(int)
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] = 0
+                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantPrime"] = 0
+
 
                 ## Define global information of each Line
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["name"] = claimServiceElmt.service.name
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] = claimServiceElmt.service.code
                 # print('servcode',  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"])
                 invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"] = claimServiceElmt.service.price
+                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["prime"] = 0
                 ## Status Valuated of Claim 
                 if cclaim.status==16:
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
@@ -769,16 +773,25 @@ def invoice_declaration_naissance_query(user, **kwargs):
                     print('servcode',  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"])
                     dob = 0
                     death = 0
-                    if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "ACCHT", "DNCSI" ,"DNCMA", "DNHDHR"]: 
+                    prime = 0
+                    # if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "ACCHT", "DNCSI" ,"DNCMA", "DNHDHR"]: 
+                    #     dob += 1
+                    if claimServiceElmt.service.packagetype == "Hemo1" or claimServiceElmt.service.packagetype == "ACCHT" or claimServiceElmt.service.packagetype == "DNCSI" or claimServiceElmt.service.packagetype == "DNCMA" or claimServiceElmt.service.packagetype == "DNHDHR":    
                         dob += 1
-                    if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "DDCSI", "DDCMA", "DDHDHR"]:
+                    # if invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] in ["hemo1", "DDCSI", "DDCMA", "DDHDHR"]:
+                    #     death += 1
+                    
+                    if claimServiceElmt.service.packagetype == "DDCSI" or claimServiceElmt.service.packagetype == "DDCMA" or claimServiceElmt.service.packagetype == "DDHDHR" :
                         death += 1
+                    
                     if  invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] ==  dob + death : 
                     # if  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] ==  dob + death :
                         invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated) + int((float(claimServiceElmt.qty_provided) * float(claimServiceElmt.price_valuated) * 0.1))
+                        prime = int((float(claimServiceElmt.qty_provided) * float(claimServiceElmt.price_valuated) * 0.1))
                     else:
                         invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-
+                    
+                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantPrime"] += prime
                     print("status",cclaim.status)
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                     # invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
@@ -786,6 +799,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
                     print("QTY",invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"])
                     print("dob", dob)
                     print("death", death)
+                    print('prim-----------------------', invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantPrime"])
                     print("MONTANT RECUE",  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"])
                     print("MONTANT VALIDE-------------",invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
                     print("nombre de facture recu",  invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'])
@@ -796,6 +810,14 @@ def invoice_declaration_naissance_query(user, **kwargs):
                 if claimServiceElmt.service.packagetype == "S":
                     print("=======montant recu=========")
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"]
+                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantPrime"] += invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["prime"]
+                    if claimServiceElmt.qty_provided is not None and claimServiceElmt.price_valuated is not None:
+                        Val = invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantPrime"]
+                        sommeT = sum([Val])
+                        print('valeur de la prime----------++++++++----',Val)
+                        print('test-montant-prime----------++++++++----',sommeT)
+                    else:
+                        invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantPrime"] += 0
                 else :
                     # Desactivation du controle sur ManualPrice
                     #if claimServiceElmt.service.manualPrice == True :
@@ -841,6 +863,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
         invoiceElemtTotal["SMontantRecueTotalV"] = 0
         invoiceElemtTotal["SMtnNotValideV"] = 0
         invoiceElemtTotal["SMtnValideV"] = 0
+        invoiceElemtTotal["SMontantPrimeTotalV"]= 0
         
         # print ("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<20}".format('type','id','name','Code','tarif','qty', 'Montant Recus','Qty Validated'))
         # print("invoiceElemtList ", invoiceElemtList)
@@ -848,9 +871,11 @@ def invoice_declaration_naissance_query(user, **kwargs):
         for typeList,v in invoiceElemtList.items():
             for id in v:
                 montantNonValide = 0
+                montant_prime  = 0
                 # Correction des chiffres negatif : -- Si un montant est negatif ca veut dire que le montant valuated est superieur a la somme des sous-services / services
                 # if v[id]['MontantRecue'] - v[id]['qty']['sum'] > 0 :
                 montantNonValide = v[id]['MontantRecue'] - v[id]['qty']['sum']
+                montant_prime = v[id]['MontantPrime']
                 if typeList=="P":
                     invoiceElemtListP.append(dict(
                         name=v[id]['name'],
@@ -898,11 +923,14 @@ def invoice_declaration_naissance_query(user, **kwargs):
                         tarif=str("{:,.0f}".format(v[id]['tarif'])),
                         nbrFacture = str(int(v[id]['qty']['all'])),
                         mtnFactureRecues= str("{:,.0f}".format(v[id]['MontantRecue'])),
+                        mtnPrimeRecues= str("{:,.0f}".format(v[id]['MontantPrime'])),
                         nbFactureValides= str(v[id]['qty']['valuated']),
                         montantNonValide = str("{:,.0f}".format(v[id]['MontantRecue'] - v[id]['qty']['sum'])),
                         montantValide =  str("{:,.0f}".format(v[id]['qty']['sum']))
                         ))
                     invoiceElemtTotal["SMontantRecueTotalV"] += v[id]['MontantRecue']
+                    invoiceElemtTotal["SMontantPrimeTotalV"] += v[id]['MontantPrime']
+                    print('SMontantPrimeTotalV',invoiceElemtTotal["SMontantPrimeTotalV"])
                     invoiceElemtTotal["SQtyValuatedV"] += v[id]['qty']['valuated']
                     invoiceElemtTotal["SMtnNotValideV"] += v[id]['MontantRecue'] - v[id]['qty']['sum']
                     invoiceElemtTotal["SMtnValideV"] += v[id]['qty']['sum']
@@ -922,6 +950,8 @@ def invoice_declaration_naissance_query(user, **kwargs):
         invoiceElemtTotal["PQtyTotal"] = "{:,.0f}".format(invoiceElemtTotal["PQtyTotalV"])                                                                              
         invoiceElemtTotal["MtnValideTotal"] = "{:,.0f}".format(invoiceElemtTotal["FMtnValideV"]+invoiceElemtTotal["SMtnValideV"]+invoiceElemtTotal["PMtnValideV"])
         invoiceElemtTotal_MtnValideTotal += invoiceElemtTotal["FMtnValideV"]+invoiceElemtTotal["SMtnValideV"]+invoiceElemtTotal["PMtnValideV"]
+        invoiceElemtTotal["MtnPrimeTotal"] = "{:,.0f}".format(invoiceElemtTotal["SMontantPrimeTotalV"])
+        invoiceElemtTotal_MtnPrimeTotal += invoiceElemtTotal["SMontantPrimeTotalV"]
         invoiceElemtTotal["FMtnValide"] = "{:,.0f}".format(invoiceElemtTotal["FMtnValideV"])
         invoiceElemtTotal["SMtnValide"] = "{:,.0f}".format(invoiceElemtTotal["SMtnValideV"])
         invoiceElemtTotal["PMtnValide"] = "{:,.0f}".format(invoiceElemtTotal["PMtnValideV"])
@@ -934,6 +964,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
         invoiceElemtTotal_MontantRecueTotal += invoiceElemtTotal["PMontantRecueTotalV"]+invoiceElemtTotal["FMontantRecueTotalV"]+invoiceElemtTotal["SMontantRecueTotalV"]
         print("invoiceE_____RecueTotal ", invoiceElemtTotal_MontantRecueTotal)
         print("invoiceElemtTotal_MtnValideTotal ", invoiceElemtTotal_MtnValideTotal)
+        print("invoiceElemtTotal_MtnPrimeTotal is-------------------- ", invoiceElemtTotal["SMontantPrimeTotalV"])
         invoiceElemtTotal["PMontantRecueTotal"] = "{:,.0f}".format(invoiceElemtTotal["PMontantRecueTotalV"])
         invoiceElemtTotal["SMontantRecueTotal"] = "{:,.0f}".format(invoiceElemtTotal["SMontantRecueTotalV"])
         invoiceElemtTotal["FMontantRecueTotal"] = "{:,.0f}".format(invoiceElemtTotal["FMontantRecueTotalV"])
@@ -960,6 +991,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
     # dictBase["invoiceElemtTotal"]["MtnValideTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal)
     dictBase["MontnRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MontantRecueTotal)
     dictBase["MtnValideTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal)
+    dictBase["MtnPrimeTotal"] =  "{:,.0f}".format(invoiceElemtTotal["SMontantPrimeTotalV"])
     
     print(dictBase)
 
