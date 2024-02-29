@@ -43,7 +43,7 @@ report_definitions = [
         "permission": ["131215"],
     },
     {
-        "name": "invoice_fosa_DNBD",
+        "name": "invoice_fosa_FAGEP",
         "engine": 0,
         "default_report": rptInvoiceFagPerFosa.template,
         "description": "Etat de paiement par fosa FAGEP",
