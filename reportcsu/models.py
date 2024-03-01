@@ -773,7 +773,8 @@ def invoice_declaration_naissance_query(user, **kwargs):
                                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] = 0
 
                                 if claimServiceElmt.service.code == "ACCHT":
-                                    total_accht += 1
+                                        # On somme plutot les qty
+                                        total_accht += claimServiceElmt.qty_provided
                                 if claimServiceElmt.service.code in ["DNCSI", "DDCSI", "DNCMA", "DDCMA", "DNHDHR", "DDHDHR"]:
                                     total_deces_nais += 1
                                 ## Define global information of each Line
