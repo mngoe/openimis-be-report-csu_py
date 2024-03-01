@@ -709,6 +709,8 @@ def invoice_declaration_naissance_query(user, **kwargs):
     invoiceElemtTotal_MontantRecueTotal = 0
     invoiceElemtTotal_MtnValideTotal = 0
     i = 1
+    total_accht = 0
+    total_deces_nais = 0
     for program in program_ids:
         dictBase.update({
             "prestationForfaitaireProgram"+str(i): [],
@@ -738,69 +740,93 @@ def invoice_declaration_naissance_query(user, **kwargs):
 
 
         for cclaim in claimList:
-            #First we calculate on each Service inside a
-            claimService = ClaimService.objects.filter(
-                claim = cclaim,
-                status=1
-            ).filter(validity_to__isnull=True)
-            for claimServiceElmt in claimService:
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] = 0
-                if claimServiceElmt.service.id not in invoiceElemtList[claimServiceElmt.service.packagetype]:
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id] = defaultdict(dict)
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"] = defaultdict(int)
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] = 0
+            # Verifier que la delais n'est pas passé avant de traiter
+            # La date de debut de la police doit etre <= 30 jours
+            insure_policy = InsureePolicy.objects.filter(
+                insuree=cclaim.insuree.id, validity_to__isnull=True)
+            # Boucle de Recherche de la police correspondante: un patient
+            # peu avoir plusieurs polices mais pas pour un meme programme,
+            # donc on regarde par rapport au programme et on breack
+            for inspolicy in insure_policy:
+                policy = Policy.objects.filter(id=inspolicy.policy.id).first()
+                if policy:
+                    if policy.product.program.idProgram == value:
+                        print("policy.start_date ", policy.start_date)
+                        date_format = "%Y-%m-%d"
+                        today = datetime.datetime.strptime(str(datetime.datetime.now().date()), date_format)
+                        start = datetime.datetime.strptime(str(policy.start_date), date_format)
+                        delta = today - start
+                        difference = delta.days
+                        print("difference ", difference)
+                        if difference <= 30:
+                            #First we calculate on each Service inside a
+                            claimService = ClaimService.objects.filter(
+                                claim = cclaim,
+                                status=1
+                            ).filter(validity_to__isnull=True)
+                            for claimServiceElmt in claimService:
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] = 0
+                                if claimServiceElmt.service.id not in invoiceElemtList[claimServiceElmt.service.packagetype]:
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id] = defaultdict(dict)
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"] = defaultdict(int)
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] = 0
 
-                ## Define global information of each Line
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["name"] = claimServiceElmt.service.name
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] = claimServiceElmt.service.code
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"] = claimServiceElmt.service.price
-                ## Status Valuated of Claim
-                if cclaim.status==16:
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
-                    if claimServiceElmt.price_valuated == None :
-                        claimServiceElmt.price_valuated = 0
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
+                                if claimServiceElmt.service.code == "ACCHT":
+                                    total_accht += 1
+                                if claimServiceElmt.service.code in ["DNCSI", "DDCSI", "DNCMA", "DDCMA", "DNHDHR", "DDHDHR"]:
+                                    total_deces_nais += 1
+                                ## Define global information of each Line
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["name"] = claimServiceElmt.service.name
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] = claimServiceElmt.service.code
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"] = claimServiceElmt.service.price
+                                ## Status Valuated of Claim
+                                if cclaim.status==16:
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
+                                    if claimServiceElmt.price_valuated == None :
+                                        claimServiceElmt.price_valuated = 0
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
 
-                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
-                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
+                                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
+                                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
 
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] += claimServiceElmt.qty_provided
-                ## Specific Rules for Montant Recue (for different type of package)
-                if claimServiceElmt.service.packagetype == "S":
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"]
-                else :
-                    # Desactivation du controle sur ManualPrice
-                    #if claimServiceElmt.service.manualPrice == True :
-                    #    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * claimServiceElmt.service.price
-                    #else :
-                    claimSs = ClaimServiceService.objects.filter(
-                        claimlinkedService = claimServiceElmt
-                    )
-                    tarifLocal = 0
-                    for claimSsElement in claimSs:
-                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
-                    #    print(tarifLocal)
-                    claimSi = ClaimServiceItem.objects.filter(
-                        claimlinkedItem = claimServiceElmt
-                    )
-                    for claimSiElement in claimSi:
-                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
-                        #print(tarifLocal)
-                    #print(type(tarifLocal))
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
-            
-                
-                if claimServiceElmt.service.packagetype not in invoiceElemtTotal :
-                    invoiceElemtTotal[claimServiceElmt.service.packagetype] = defaultdict(int)
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] += claimServiceElmt.qty_provided
+                                ## Specific Rules for Montant Recue (for different type of package)
+                                if claimServiceElmt.service.packagetype == "S":
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"]
+                                else :
+                                    # Desactivation du controle sur ManualPrice
+                                    #if claimServiceElmt.service.manualPrice == True :
+                                    #    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * claimServiceElmt.service.price
+                                    #else :
+                                    claimSs = ClaimServiceService.objects.filter(
+                                        claimlinkedService = claimServiceElmt
+                                    )
+                                    tarifLocal = 0
+                                    for claimSsElement in claimSs:
+                                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                                    #    print(tarifLocal)
+                                    claimSi = ClaimServiceItem.objects.filter(
+                                        claimlinkedItem = claimServiceElmt
+                                    )
+                                    for claimSiElement in claimSi:
+                                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                                        #print(tarifLocal)
+                                    #print(type(tarifLocal))
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
+                            
+                                
+                                if claimServiceElmt.service.packagetype not in invoiceElemtTotal :
+                                    invoiceElemtTotal[claimServiceElmt.service.packagetype] = defaultdict(int)
 
-                ### Sum of all line at footer of table
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyTotalV"] += int(claimServiceElmt.qty_provided)
-                MtnNotValideV = 0
-                if int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"]) > 0:
-                    MtnNotValideV = int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnNotValideV"] = MtnNotValideV
-                invoiceElemtTotal["QtyTotalV"] += int(claimServiceElmt.qty_provided)
+                                ### Sum of all line at footer of table
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyTotalV"] += int(claimServiceElmt.qty_provided)
+                                MtnNotValideV = 0
+                                if int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"]) > 0:
+                                    MtnNotValideV = int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnNotValideV"] = MtnNotValideV
+                                invoiceElemtTotal["QtyTotalV"] += int(claimServiceElmt.qty_provided)
+                        break
     
         invoiceElemtTotal["PQtyValuatedV"]=0
         invoiceElemtTotal["PMontantRecueTotalV"] = 0
@@ -932,7 +958,13 @@ def invoice_declaration_naissance_query(user, **kwargs):
     # dictBase["invoiceElemtTotal"]["MontantRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MontantRecueTotal)
     # dictBase["invoiceElemtTotal"]["MtnValideTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal)
     dictBase["MontnRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MontantRecueTotal)
+    print("total_deces_nais ", total_deces_nais)
+    print("total_accht ", total_accht)
     dictBase["MtnValideTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal)
+    dictBase["TotPrimesEtatCiv"] = "0"
+    if total_deces_nais != 0 and total_accht != 0:
+        if total_accht == total_deces_nais:
+            dictBase["TotPrimesEtatCiv"] = "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal * 0.1)
     
     # print(dictBase)
 
