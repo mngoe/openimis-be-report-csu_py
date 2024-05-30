@@ -994,18 +994,19 @@ def invoice_declaration_naissance_query(user, **kwargs):
 
 
 def invoice_district_query(user, **kwargs):
-    date_from = kwargs.get("date_from")
-    date_to = kwargs.get("date_to")
+    date_from_value = kwargs.get("date_from")
+    date_from = date_from_value.split("-")[0] + "-" + date_from_value.split("-")[1]
+    date_to_value = kwargs.get("date_to")
+    date_to = date_to_value.split("-")[0] + "-" + date_to_value.split("-")[1]
     district = kwargs.get("district")
-    format = "%Y-%m"
+    format = "%Y-%m-%d"
 
-    date_from_object = datetime.datetime.strptime(date_from, format)
-    date_from_str = date_from_object.strftime("%Y/%m")
+    date_from_object = datetime.datetime.strptime(date_from_value, format)
+    date_from_str = date_from_object.strftime("%Y/%m/%d")
 
-    date_to_object = datetime.datetime.strptime(date_to, format)
+    date_to_object = datetime.datetime.strptime(date_to_value, format)
     days_in_month = calendar.monthrange(date_to_object.year, date_to_object.month)[1]
-    print("days_in_month ", days_in_month)
-    date_to_str = date_to_object.strftime("%Y/%m")
+    date_to_str = date_to_object.strftime("%Y/%m/%d")
 
     facility_data = []
     dictBase = {
