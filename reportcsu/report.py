@@ -1,9 +1,9 @@
 from distutils.command import upload
 from reportcsu.models import invoice_csu_query, invoice_hiv_query,\
-    invoice_declaration_naissance_query, invoice_fagep_query
+    invoice_declaration_naissance_query, invoice_fagep_query, invoice_district_query
 
 from reportcsu.report_templates import rptInvoicePerFosa,\
-    rptInvoiceReportHIV, rptInvoiceDnPerFosa, rptInvoiceFagPerFosa
+    rptInvoiceReportHIV, rptInvoiceDnPerFosa, rptInvoiceFagPerFosa, rptInvoiceDistrictPerFosa
 
 report_definitions = [ 
     {
@@ -31,6 +31,15 @@ report_definitions = [
         "description": "Etat de paiement par fosa Declaration Naissance",
         "module": "reportcsu",
         "python_query": invoice_declaration_naissance_query, 
+        "permission": ["131215"],
+    },
+    {
+        "name": "invoice_district_csu",
+        "engine": 0,
+        "default_report": rptInvoiceDistrictPerFosa.template,
+        "description": "Etat de paiement par District",
+        "module": "reportcsu",
+        "python_query": invoice_district_query, 
         "permission": ["131215"],
     },
     {

@@ -17,7 +17,11 @@ import json
 import datetime
 from program import models as program_models
 import time
+from datetime import timedelta
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
+import calendar
 
 val_de_zero = [
     'million', 'milliard', 'billion',
@@ -166,7 +170,6 @@ def invoice_csu_query(user, **kwargs):
                     if claimServiceElmt.price_valuated == None :
                         claimServiceElmt.price_valuated = 0
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
-
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
                     invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
 
@@ -249,7 +252,6 @@ def invoice_csu_query(user, **kwargs):
         invoiceElemtTotal["SMontantRecueTotalV"] = 0
         invoiceElemtTotal["SMtnNotValideV"] = 0
         invoiceElemtTotal["SMtnValideV"] = 0
-        
         # print ("{:<5} {:<5} {:<40} {:<10} {:<10} {:<10} {:<10} {:<20}".format('type','id','name','Code','tarif','qty', 'Montant Recus','Qty Validated'))
         # print("invoiceElemtList ", invoiceElemtList)
         for typeList,v in invoiceElemtList.items():
@@ -709,6 +711,8 @@ def invoice_declaration_naissance_query(user, **kwargs):
     invoiceElemtTotal_MontantRecueTotal = 0
     invoiceElemtTotal_MtnValideTotal = 0
     i = 1
+    total_accht = 0
+    total_deces_nais = 0
     for program in program_ids:
         dictBase.update({
             "prestationForfaitaireProgram"+str(i): [],
@@ -738,69 +742,94 @@ def invoice_declaration_naissance_query(user, **kwargs):
 
 
         for cclaim in claimList:
-            #First we calculate on each Service inside a
-            claimService = ClaimService.objects.filter(
-                claim = cclaim,
-                status=1
-            ).filter(validity_to__isnull=True)
-            for claimServiceElmt in claimService:
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] = 0
-                if claimServiceElmt.service.id not in invoiceElemtList[claimServiceElmt.service.packagetype]:
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id] = defaultdict(dict)
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"] = defaultdict(int)
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] = 0
+            # Verifier que la delais n'est pas passé avant de traiter
+            # La date de debut de la police doit etre <= 30 jours
+            insure_policy = InsureePolicy.objects.filter(
+                insuree=cclaim.insuree.id, validity_to__isnull=True)
+            # Boucle de Recherche de la police correspondante: un patient
+            # peu avoir plusieurs polices mais pas pour un meme programme,
+            # donc on regarde par rapport au programme et on breack
+            for inspolicy in insure_policy:
+                policy = Policy.objects.filter(id=inspolicy.policy.id).first()
+                if policy:
+                    if policy.product.program.idProgram == value:
+                        print("policy.start_date ", policy.start_date)
+                        date_format = "%Y-%m-%d"
+                        today = datetime.datetime.strptime(str(datetime.datetime.now().date()), date_format)
+                        start = datetime.datetime.strptime(str(policy.start_date), date_format)
+                        delta = today - start
+                        difference = delta.days
+                        print("difference ", difference)
+                        if difference <= 30:
+                            #First we calculate on each Service inside a
+                            claimService = ClaimService.objects.filter(
+                                claim = cclaim,
+                                status=1
+                            ).filter(validity_to__isnull=True)
+                            for claimServiceElmt in claimService:
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] = 0
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] = 0
+                                if claimServiceElmt.service.id not in invoiceElemtList[claimServiceElmt.service.packagetype]:
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id] = defaultdict(dict)
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"] = defaultdict(int)
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] = 0
 
-                ## Define global information of each Line
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["name"] = claimServiceElmt.service.name
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] = claimServiceElmt.service.code
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"] = claimServiceElmt.service.price
-                ## Status Valuated of Claim
-                if cclaim.status==16:
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
-                    if claimServiceElmt.price_valuated == None :
-                        claimServiceElmt.price_valuated = 0
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
+                                if claimServiceElmt.service.code == "ACCHT":
+                                        # On somme plutot les qty
+                                        total_accht += claimServiceElmt.qty_provided
+                                if claimServiceElmt.service.code in ["DNCSI", "DDCSI", "DNCMA", "DDCMA", "DNHDHR", "DDHDHR"]:
+                                    total_deces_nais += 1
+                                ## Define global information of each Line
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["name"] = claimServiceElmt.service.name
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["code"] = claimServiceElmt.service.code
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"] = claimServiceElmt.service.price
+                                ## Status Valuated of Claim
+                                if cclaim.status==16:
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'] += int(claimServiceElmt.qty_provided)
+                                    if claimServiceElmt.price_valuated == None :
+                                        claimServiceElmt.price_valuated = 0
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'] += int(claimServiceElmt.qty_provided * claimServiceElmt.price_valuated)
 
-                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
-                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
+                                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyValuatedV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['valuated'])
+                                    invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"] += int(invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['sum'])
 
-                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] += claimServiceElmt.qty_provided
-                ## Specific Rules for Montant Recue (for different type of package)
-                if claimServiceElmt.service.packagetype == "S":
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"]
-                else :
-                    # Desactivation du controle sur ManualPrice
-                    #if claimServiceElmt.service.manualPrice == True :
-                    #    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * claimServiceElmt.service.price
-                    #else :
-                    claimSs = ClaimServiceService.objects.filter(
-                        claimlinkedService = claimServiceElmt
-                    )
-                    tarifLocal = 0
-                    for claimSsElement in claimSs:
-                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
-                    #    print(tarifLocal)
-                    claimSi = ClaimServiceItem.objects.filter(
-                        claimlinkedItem = claimServiceElmt
-                    )
-                    for claimSiElement in claimSi:
-                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
-                        #print(tarifLocal)
-                    #print(type(tarifLocal))
-                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
-            
-                
-                if claimServiceElmt.service.packagetype not in invoiceElemtTotal :
-                    invoiceElemtTotal[claimServiceElmt.service.packagetype] = defaultdict(int)
+                                invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["qty"]['all'] += claimServiceElmt.qty_provided
+                                ## Specific Rules for Montant Recue (for different type of package)
+                                if claimServiceElmt.service.packagetype == "S":
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["tarif"]
+                                else :
+                                    # Desactivation du controle sur ManualPrice
+                                    #if claimServiceElmt.service.manualPrice == True :
+                                    #    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * claimServiceElmt.service.price
+                                    #else :
+                                    claimSs = ClaimServiceService.objects.filter(
+                                        claimlinkedService = claimServiceElmt
+                                    )
+                                    tarifLocal = 0
+                                    for claimSsElement in claimSs:
+                                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                                    #    print(tarifLocal)
+                                    claimSi = ClaimServiceItem.objects.filter(
+                                        claimlinkedItem = claimServiceElmt
+                                    )
+                                    for claimSiElement in claimSi:
+                                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                                        #print(tarifLocal)
+                                    #print(type(tarifLocal))
+                                    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
+                            
+                                
+                                if claimServiceElmt.service.packagetype not in invoiceElemtTotal :
+                                    invoiceElemtTotal[claimServiceElmt.service.packagetype] = defaultdict(int)
 
-                ### Sum of all line at footer of table
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyTotalV"] += int(claimServiceElmt.qty_provided)
-                MtnNotValideV = 0
-                if int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"]) > 0:
-                    MtnNotValideV = int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
-                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnNotValideV"] = MtnNotValideV
-                invoiceElemtTotal["QtyTotalV"] += int(claimServiceElmt.qty_provided)
+                                ### Sum of all line at footer of table
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"QtyTotalV"] += int(claimServiceElmt.qty_provided)
+                                MtnNotValideV = 0
+                                if int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"]) > 0:
+                                    MtnNotValideV = int(invoiceElemtTotal[claimServiceElmt.service.packagetype+"MontantRecueTotalV"] - invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnValideV"])
+                                invoiceElemtTotal[claimServiceElmt.service.packagetype+"MtnNotValideV"] = MtnNotValideV
+                                invoiceElemtTotal["QtyTotalV"] += int(claimServiceElmt.qty_provided)
+                        break
     
         invoiceElemtTotal["PQtyValuatedV"]=0
         invoiceElemtTotal["PMontantRecueTotalV"] = 0
@@ -932,7 +961,13 @@ def invoice_declaration_naissance_query(user, **kwargs):
     # dictBase["invoiceElemtTotal"]["MontantRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MontantRecueTotal)
     # dictBase["invoiceElemtTotal"]["MtnValideTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal)
     dictBase["MontnRecueTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MontantRecueTotal)
+    print("total_deces_nais ", total_deces_nais)
+    print("total_accht ", total_accht)
     dictBase["MtnValideTotal"] =  "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal)
+    dictBase["TotPrimesEtatCiv"] = "0"
+    if total_deces_nais != 0 and total_accht != 0:
+        if total_accht == total_deces_nais:
+            dictBase["TotPrimesEtatCiv"] = "{:,.0f}".format(invoiceElemtTotal_MtnValideTotal * 0.1)
     
     # print(dictBase)
 
@@ -955,6 +990,96 @@ def invoice_declaration_naissance_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["area"] = location2_str
+    return dictBase
+
+
+def invoice_district_query(user, **kwargs):
+    date_from = kwargs.get("date_from")
+    date_to = kwargs.get("date_to")
+    district = kwargs.get("district")
+    format = "%Y-%m"
+
+    date_from_object = datetime.datetime.strptime(date_from, format)
+    date_from_str = date_from_object.strftime("%Y/%m")
+
+    date_to_object = datetime.datetime.strptime(date_to, format)
+    days_in_month = calendar.monthrange(date_to_object.year, date_to_object.month)[1]
+    print("days_in_month ", days_in_month)
+    date_to_str = date_to_object.strftime("%Y/%m")
+
+    facility_data = []
+    dictBase = {
+    }
+    grand_total = 0
+
+    # Get the district
+    if district and district!="0" :
+        district_obj = Location.objects.filter(
+            code=district,
+            validity_to__isnull=True
+        ).first()
+        dictBase["district"] = district_obj.name
+
+        my_dict = {
+            "01": "January",
+            "02": "Febuary",
+            "03": "March",
+            "04": "April",
+            "05": "May",
+            "06": "June",
+            "07": "July",
+            "08": "August",
+            "09": "September",
+            "10": "October",
+            "11": "November",
+            "12": "December"
+        }
+        mois_debut = date_from_str.split("/")[1]
+        value = my_dict.get(mois_debut)
+        annee_mois = date_from_str.split("/")[0] + date_from_str.split("/")[1]
+        dictBase["libelle"] = annee_mois.replace("/", "") + "-" + district_obj.name
+        dictBase["periode"] = value + " " + date_from_str.split("/")[0]
+
+        all_health_facilities = HealthFacility.objects.filter(
+            location_id=district_obj.id,
+            validity_to__isnull=True
+        )
+        statusExcluded = [1, 2]
+        for facility in all_health_facilities:
+            claimList = Claim.objects.exclude(
+                status__in=statusExcluded
+            ).filter(
+                date_to__gte=date_from + "-01", # Premier our de la période
+                date_to__lte=date_to + "-" + str(days_in_month), #Dernier jour de la période
+                validity_to__isnull=True,
+                health_facility_id=facility.id
+            )
+            total = 0
+            for claim in claimList:
+                claimService = ClaimService.objects.filter(
+                    claim = claim,
+                    status=1
+                )
+                for claimServiceElmt in claimService:
+                    if claimServiceElmt.price_valuated:
+                        total+=claimServiceElmt.price_valuated
+                    elif claimServiceElmt.price_approved:
+                        total+=claimServiceElmt.price_approved
+                    elif claimServiceElmt.price_adjusted:
+                        total+=claimServiceElmt.price_adjusted
+                    elif claimServiceElmt.price_asked:
+                        total+=claimServiceElmt.price_asked
+            grand_total += total
+            values = {
+                "Facilityname": facility.name,
+                "BankName": facility.bank_name,
+                "BankAcc": facility.acc_code,
+                "TotalAmount": str("{:,.0f}".format(total))
+            }
+            facility_data.append(values)
+    dictBase["datas"] = facility_data
+    dictBase["Total"] = str("{:,.0f}".format(grand_total))
+    print(dictBase)
     return dictBase
 
 def invoice_fagep_query(user, **kwargs):
@@ -993,7 +1118,7 @@ def invoice_fagep_query(user, **kwargs):
     programs = program_models.Program.objects.filter(
         validityDateFrom__lte=today).filter(
         Q(validityDateTo__isnull=True) | Q(validityDateTo__gte=today)
-        ).filter(code='FAG').order_by('-idProgram')[:5]
+        ).filter(code='PAL').order_by('-idProgram')[:5]
     
     program_ids = []
     for prg in programs:
