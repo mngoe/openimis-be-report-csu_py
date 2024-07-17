@@ -660,6 +660,12 @@ def invoice_hiv_query(user, **kwargs):
     print("dictBase ", dictBase)
     return dictBase
 
+def get_french_month(number):
+    months = [
+        "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+        "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+    ]
+    return months[number - 1]
 
 def invoice_declaration_naissance_query(user, **kwargs):
     print("BBBB")
@@ -677,11 +683,12 @@ def invoice_declaration_naissance_query(user, **kwargs):
 
     date_to_object = datetime.datetime.strptime(date_to, format)
     date_to_str = date_to_object.strftime("%d/%m/%Y")
+    period_str = f"{get_french_month(date_from_object.month)} {date_from_object.year}"
 
     dictGeo = {}
     dictBase = {
         "dateFrom": date_from_str,
-        "dateTo": date_to_str
+        "dateTo": date_to_str + ', ' + period_str
     }
     # If there is HealthFacility defined in the form
     if hflocation and hflocation!="0" :
