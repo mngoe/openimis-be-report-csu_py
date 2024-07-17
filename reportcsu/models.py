@@ -759,7 +759,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
                         delta = today - start
                         difference = delta.days
                         print("difference ", difference)
-                        if difference <= 30:
+                        if difference <= 30 or 1==1:
                             #First we calculate on each Service inside a
                             claimService = ClaimService.objects.filter(
                                 claim = cclaim,
