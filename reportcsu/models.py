@@ -660,7 +660,6 @@ def invoice_hiv_query(user, **kwargs):
     print("dictBase ", dictBase)
     return dictBase
 
-
 def invoice_declaration_naissance_query(user, **kwargs):
     print("BBBB")
     date_from = kwargs.get("date_from")
