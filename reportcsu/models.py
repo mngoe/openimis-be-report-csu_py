@@ -4,7 +4,7 @@ from django.db.models import Q
 from core import models as core_models
 from medical.models import Item, Service
 from report.services import run_stored_proc_report
-from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
+# from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
 from policy.models import Policy
 from insuree.models import Insuree
@@ -60,6 +60,7 @@ denoms_fr = (
 )
 
 def invoice_csu_query(user, **kwargs):
+    from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
     print("AAAAAA")
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
@@ -508,6 +509,8 @@ def amount_to_text_fr(number, currency):
     return final_result
     
 def invoice_hiv_query(user, **kwargs):
+    from claim.models import Claim, ClaimService,\
+        ClaimItem
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     hflocation = kwargs.get("hflocation")
@@ -662,6 +665,8 @@ def invoice_hiv_query(user, **kwargs):
 
 def invoice_declaration_naissance_query(user, **kwargs):
     print("BBBB")
+    from claim.models import Claim, ClaimService,\
+        ClaimServiceService, ClaimServiceItem
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     location0 = kwargs.get("location0")
@@ -993,6 +998,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
 
 
 def invoice_district_query(user, **kwargs):
+    from claim.models import Claim, ClaimService
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     district = kwargs.get("district")
@@ -1083,6 +1089,8 @@ def invoice_district_query(user, **kwargs):
 
 def invoice_fagep_query(user, **kwargs):
     print("FAGEP REPORT")
+    from claim.models import Claim, ClaimService,\
+        ClaimServiceService, ClaimServiceItem
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     location0 = kwargs.get("location0")
