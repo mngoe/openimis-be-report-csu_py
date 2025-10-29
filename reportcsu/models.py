@@ -188,13 +188,15 @@ def invoice_csu_query(user, **kwargs):
                     )
                     tarifLocal = 0
                     for claimSsElement in claimSs:
-                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                        qty = claimSsElement.qty_adjusted or claimSsElement.qty_displayed
+                        tarifLocal += qty * claimSsElement.price_asked
                     #    print(tarifLocal)
                     claimSi = ClaimServiceItem.objects.filter(
                         claim_service = claimServiceElmt
                     )
                     for claimSiElement in claimSi:
-                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                        qty = claimSiElement.qty_adjusted or claimSiElement.qty_displayed
+                        tarifLocal += qty * claimSiElement.price_asked
                         #print(tarifLocal)
                     #print(type(tarifLocal))
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
@@ -811,13 +813,15 @@ def invoice_declaration_naissance_query(user, **kwargs):
                                     )
                                     tarifLocal = 0
                                     for claimSsElement in claimSs:
-                                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                                        qty = claimSsElement.qty_adjusted or claimSsElement.qty_displayed
+                                        tarifLocal += qty * claimSsElement.price_asked
                                     #    print(tarifLocal)
                                     claimSi = ClaimServiceItem.objects.filter(
                                         claim_service = claimServiceElmt
                                     )
                                     for claimSiElement in claimSi:
-                                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                                        qty = claimSiElement.qty_adjusted or claimSiElement.qty_displayed
+                                        tarifLocal += qty * claimSiElement.price_asked
                                         #print(tarifLocal)
                                     #print(type(tarifLocal))
                                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
@@ -1218,13 +1222,15 @@ def invoice_fagep_query(user, **kwargs):
                     )
                     tarifLocal = 0
                     for claimSsElement in claimSs:
-                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                        qty = claimSsElement.qty_adjusted or claimSsElement.qty_displayed
+                        tarifLocal += qty * claimSsElement.price_asked
                     #    print(tarifLocal)
                     claimSi = ClaimServiceItem.objects.filter(
                         claim_service = claimServiceElmt
                     )
                     for claimSiElement in claimSi:
-                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                        qty = claimSiElement.qty_adjusted or claimSiElement.qty_displayed
+                        tarifLocal += qty * claimSiElement.price_asked
                         #print(tarifLocal)
                     #print(type(tarifLocal))
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
