@@ -20,6 +20,8 @@ import time
 from datetime import timedelta
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
+import re
+from django.utils import timezone
 
 import calendar
 
@@ -58,6 +60,13 @@ denoms_fr = (
     'quattuordecillions', 'sexdecillions', 'septendecillions',
     'octodecillions', 'icosillions', 'vigintillions'
 )
+
+def _period_part(date_str: str) -> str:
+        try:
+            datetime.datetime.strptime(date_str, "%Y-%m-%d")
+            return date_str
+        except ValueError:
+            return date_str[:7]
 
 def invoice_csu_query(user, **kwargs):
     from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
@@ -395,6 +404,15 @@ def invoice_csu_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["area"] = location2_str
+    # Invoice name
+    hf_name = dictBase.get("fosa", "CSU")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 
@@ -663,6 +681,16 @@ def invoice_hiv_query(user, **kwargs):
     dictBase["TOTAL"] = str("{:,.0f}".format(float(int(total)))) + " Francs CFA"
     dictBase["amountLetter"] = amount_to_text_fr(int(total), 'Francs CFA')
     print("dictBase ", dictBase)
+    
+    # Invoice name
+    hf_name = dictBase.get("fosa", "HIV")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 def invoice_declaration_naissance_query(user, **kwargs):
@@ -998,6 +1026,16 @@ def invoice_declaration_naissance_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["area"] = location2_str
+
+    # Invoice name
+    hf_name = dictBase.get("fosa", "CSU")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 
@@ -1089,6 +1127,16 @@ def invoice_district_query(user, **kwargs):
     dictBase["datas"] = facility_data
     dictBase["Total"] = str("{:,.0f}".format(grand_total))
     print(dictBase)
+
+    # Invoice name
+    hf_name = dictBase.get("district", "District")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 def invoice_fagep_query(user, **kwargs):
@@ -1430,4 +1478,14 @@ def invoice_fagep_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["area"] = location2_str
+
+    # Invoice name
+    hf_name = dictBase.get("fosa", "FAGEP")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
