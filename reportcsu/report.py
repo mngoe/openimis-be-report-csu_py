@@ -1,4 +1,3 @@
-from distutils.command import upload
 from reportcsu.models import invoice_csu_query, invoice_hiv_query,\
     invoice_declaration_naissance_query, invoice_fagep_query, invoice_district_query
 
