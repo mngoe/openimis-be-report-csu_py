@@ -1044,7 +1044,7 @@ def invoice_district_query(user, **kwargs):
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     district = kwargs.get("district")
-    format = "%Y-%m-%d"
+    format = "%Y-%m"
 
     date_from_object = datetime.datetime.strptime(date_from, format)
     date_from_str = date_from_object.strftime("%Y/%m")
