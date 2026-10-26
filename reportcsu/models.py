@@ -4,7 +4,7 @@ from django.db.models import Q
 from core import models as core_models
 from medical.models import Item, Service
 from report.services import run_stored_proc_report
-from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
+# from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
 from location.models import Location, HealthFacility
 from policy.models import Policy
 from insuree.models import Insuree
@@ -20,6 +20,8 @@ import time
 from datetime import timedelta
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
+import re
+from django.utils import timezone
 
 import calendar
 
@@ -59,7 +61,15 @@ denoms_fr = (
     'octodecillions', 'icosillions', 'vigintillions'
 )
 
+def _period_part(date_str: str) -> str:
+        try:
+            datetime.datetime.strptime(date_str, "%Y-%m-%d")
+            return date_str
+        except ValueError:
+            return date_str[:7]
+
 def invoice_csu_query(user, **kwargs):
+    from claim.models import Claim, ClaimService, ClaimItem, ClaimServiceService, ClaimServiceItem
     print("AAAAAA")
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
@@ -95,7 +105,7 @@ def invoice_csu_query(user, **kwargs):
     programs = program_models.Program.objects.filter(
         validityDateFrom__lte=today).filter(
         Q(validityDateTo__isnull=True) | Q(validityDateTo__gte=today)
-        ).exclude(code='DNB').order_by('-idProgram')[:5]
+        ).exclude(code='DNB').order_by('idProgram')[:5]
     
     program_ids = []
     for prg in programs:
@@ -183,17 +193,19 @@ def invoice_csu_query(user, **kwargs):
                     #    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * claimServiceElmt.service.price
                     #else :
                     claimSs = ClaimServiceService.objects.filter(
-                        claimlinkedService = claimServiceElmt
+                        claim_service = claimServiceElmt
                     )
                     tarifLocal = 0
                     for claimSsElement in claimSs:
-                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                        qty = claimSsElement.qty_adjusted or claimSsElement.qty_displayed
+                        tarifLocal += qty * claimSsElement.price_asked
                     #    print(tarifLocal)
                     claimSi = ClaimServiceItem.objects.filter(
-                        claimlinkedItem = claimServiceElmt
+                        claim_service = claimServiceElmt
                     )
                     for claimSiElement in claimSi:
-                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                        qty = claimSiElement.qty_adjusted or claimSiElement.qty_displayed
+                        tarifLocal += qty * claimSiElement.price_asked
                         #print(tarifLocal)
                     #print(type(tarifLocal))
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
@@ -392,6 +404,15 @@ def invoice_csu_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["area"] = location2_str
+    # Invoice name
+    hf_name = dictBase.get("fosa", "CSU")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 
@@ -508,6 +529,8 @@ def amount_to_text_fr(number, currency):
     return final_result
     
 def invoice_hiv_query(user, **kwargs):
+    from claim.models import Claim, ClaimService,\
+        ClaimItem
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     hflocation = kwargs.get("hflocation")
@@ -658,10 +681,22 @@ def invoice_hiv_query(user, **kwargs):
     dictBase["TOTAL"] = str("{:,.0f}".format(float(int(total)))) + " Francs CFA"
     dictBase["amountLetter"] = amount_to_text_fr(int(total), 'Francs CFA')
     print("dictBase ", dictBase)
+    
+    # Invoice name
+    hf_name = dictBase.get("fosa", "HIV")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 def invoice_declaration_naissance_query(user, **kwargs):
     print("BBBB")
+    from claim.models import Claim, ClaimService,\
+        ClaimServiceService, ClaimServiceItem
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     location0 = kwargs.get("location0")
@@ -696,7 +731,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
     programs = program_models.Program.objects.filter(
         validityDateFrom__lte=today).filter(
         Q(validityDateTo__isnull=True) | Q(validityDateTo__gte=today)
-        ).filter(code='DNB').order_by('-idProgram')[:5]
+        ).filter(code='DNB').order_by('idProgram')[:5]
     
     program_ids = []
     for prg in programs:
@@ -759,7 +794,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
                         delta = today - start
                         difference = delta.days
                         print("difference ", difference)
-                        if difference <= 30:
+                        if difference <= 30 or 1==1:
                             #First we calculate on each Service inside a
                             claimService = ClaimService.objects.filter(
                                 claim = cclaim,
@@ -802,17 +837,19 @@ def invoice_declaration_naissance_query(user, **kwargs):
                                     #    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * claimServiceElmt.service.price
                                     #else :
                                     claimSs = ClaimServiceService.objects.filter(
-                                        claimlinkedService = claimServiceElmt
+                                        claim_service = claimServiceElmt
                                     )
                                     tarifLocal = 0
                                     for claimSsElement in claimSs:
-                                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                                        qty = claimSsElement.qty_adjusted or claimSsElement.qty_displayed
+                                        tarifLocal += qty * claimSsElement.price_asked
                                     #    print(tarifLocal)
                                     claimSi = ClaimServiceItem.objects.filter(
-                                        claimlinkedItem = claimServiceElmt
+                                        claim_service = claimServiceElmt
                                     )
                                     for claimSiElement in claimSi:
-                                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                                        qty = claimSiElement.qty_adjusted or claimSiElement.qty_displayed
+                                        tarifLocal += qty * claimSiElement.price_asked
                                         #print(tarifLocal)
                                     #print(type(tarifLocal))
                                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
@@ -989,23 +1026,32 @@ def invoice_declaration_naissance_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["area"] = location2_str
+
+    # Invoice name
+    hf_name = dictBase.get("fosa", "CSU")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 
 def invoice_district_query(user, **kwargs):
-    date_from_value = kwargs.get("date_from")
-    date_from = date_from_value.split("-")[0] + "-" + date_from_value.split("-")[1]
-    date_to_value = kwargs.get("date_to")
-    date_to = date_to_value.split("-")[0] + "-" + date_to_value.split("-")[1]
+    from claim.models import Claim, ClaimService
+    date_from = kwargs.get("date_from")
+    date_to = kwargs.get("date_to")
     district = kwargs.get("district")
     format = "%Y-%m-%d"
 
-    date_from_object = datetime.datetime.strptime(date_from_value, format)
-    date_from_str = date_from_object.strftime("%Y/%m/%d")
+    date_from_object = datetime.datetime.strptime(date_from, format)
+    date_from_str = date_from_object.strftime("%Y/%m")
 
-    date_to_object = datetime.datetime.strptime(date_to_value, format)
+    date_to_object = datetime.datetime.strptime(date_to, format)
     days_in_month = calendar.monthrange(date_to_object.year, date_to_object.month)[1]
-    date_to_str = date_to_object.strftime("%Y/%m/%d")
+    date_to_str = date_to_object.strftime("%Y/%m")
 
     facility_data = []
     dictBase = {
@@ -1080,10 +1126,22 @@ def invoice_district_query(user, **kwargs):
     dictBase["datas"] = facility_data
     dictBase["Total"] = str("{:,.0f}".format(grand_total))
     print(dictBase)
+
+    # Invoice name
+    hf_name = dictBase.get("district", "District")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
 
 def invoice_fagep_query(user, **kwargs):
     print("FAGEP REPORT")
+    from claim.models import Claim, ClaimService,\
+        ClaimServiceService, ClaimServiceItem
     date_from = kwargs.get("date_from")
     date_to = kwargs.get("date_to")
     location0 = kwargs.get("location0")
@@ -1118,7 +1176,7 @@ def invoice_fagep_query(user, **kwargs):
     programs = program_models.Program.objects.filter(
         validityDateFrom__lte=today).filter(
         Q(validityDateTo__isnull=True) | Q(validityDateTo__gte=today)
-        ).filter(code='PAL').order_by('-idProgram')[:5]
+        ).filter(code='PAL').order_by('idProgram')[:5]
     
     program_ids = []
     for prg in programs:
@@ -1207,17 +1265,19 @@ def invoice_fagep_query(user, **kwargs):
                     #    invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += claimServiceElmt.qty_provided * claimServiceElmt.service.price
                     #else :
                     claimSs = ClaimServiceService.objects.filter(
-                        claimlinkedService = claimServiceElmt
+                        claim_service = claimServiceElmt
                     )
                     tarifLocal = 0
                     for claimSsElement in claimSs:
-                        tarifLocal += claimSsElement.qty_displayed * claimSsElement.price_asked
+                        qty = claimSsElement.qty_adjusted or claimSsElement.qty_displayed
+                        tarifLocal += qty * claimSsElement.price_asked
                     #    print(tarifLocal)
                     claimSi = ClaimServiceItem.objects.filter(
-                        claimlinkedItem = claimServiceElmt
+                        claim_service = claimServiceElmt
                     )
                     for claimSiElement in claimSi:
-                        tarifLocal += claimSiElement.qty_displayed * claimSiElement.price_asked
+                        qty = claimSiElement.qty_adjusted or claimSiElement.qty_displayed
+                        tarifLocal += qty * claimSiElement.price_asked
                         #print(tarifLocal)
                     #print(type(tarifLocal))
                     invoiceElemtList[claimServiceElmt.service.packagetype][claimServiceElmt.service.id]["MontantRecue"] += tarifLocal
@@ -1417,4 +1477,14 @@ def invoice_fagep_query(user, **kwargs):
             validity_to__isnull=True
             ).first().name
         dictBase["area"] = location2_str
+
+    # Invoice name
+    hf_name = dictBase.get("fosa", "FAGEP")
+    safe_hf_name = re.sub(r'[^\w\s-]', '', hf_name).strip().replace(' ', '_')
+    period_start = _period_part(date_from)
+    period_end = _period_part(date_to)
+    generation_date = timezone.now().strftime('%Y-%m-%dT%H-%M-%S')
+    filename = f"Facture_{safe_hf_name}_{period_start}_{period_end}_{generation_date}"
+    dictBase["report_filename"] = filename
+
     return dictBase
