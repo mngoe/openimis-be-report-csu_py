@@ -62,6 +62,14 @@ denoms_fr = (
     'octodecillions', 'icosillions', 'vigintillions'
 )
 
+def _format_qty(qty) -> str:
+    """Show whole quantities without decimals ("2", not "2.00"); keep real fractions ("0.5")."""
+    qty = Decimal(qty or 0)
+    if qty == qty.to_integral_value():
+        return str(int(qty))
+    return format(qty.normalize(), "f")
+
+
 def _period_part(date_str: str) -> str:
         try:
             datetime.datetime.strptime(date_str, "%Y-%m-%d")
@@ -347,9 +355,12 @@ def invoice_csu_query(user, **kwargs):
                     aggregate["qty"]["rejected"] += rejected_qty
                     aggregate["qty"]["sum"] += approved_qty * validated_rate
                     aggregate["MontantRecue"] += submitted_qty * aggregate["tarif"]
-                    aggregate["MontantNonValide"] += abs(
+                    # A valuated amount above the reference tariff must not produce a
+                    # negative (or, via abs(), an inflated) invalid amount on the invoice.
+                    aggregate["MontantNonValide"] += max(
                         submitted_qty * aggregate["tarif"]
-                        - approved_qty * validated_rate
+                        - approved_qty * validated_rate,
+                        Decimal(0),
                     )
                     invoiceElemtTotal[package_type + "QtyTotalV"] += submitted_qty
                     invoiceElemtTotal["QtyTotalV"] += submitted_qty
@@ -370,8 +381,6 @@ def invoice_csu_query(user, **kwargs):
         # print("invoiceElemtList ", invoiceElemtList)
         for typeList,v in invoiceElemtList.items():
             for id in v:
-                # A valuated amount above the reference tariff must not produce a
-                # negative invalid amount on the invoice.
                 montantNonValide = v[id]['MontantNonValide']
                 if typeList=="P":
                     invoiceElemtListP.append(dict(
@@ -380,8 +389,8 @@ def invoice_csu_query(user, **kwargs):
                         tarif=str("{:,.0f}".format(v[id]['tarif'])),
                         nbrFacture = str(int(v[id]['qty']['all'])),
                         mtnFactureRecues= str("{:,.0f}".format(v[id]['MontantRecue'])),
-                        nbFactureValides= str(v[id]['qty']['valuated']),
-                        nbFactureNonValides= str(v[id]['qty']['rejected']),
+                        nbFactureValides= _format_qty(v[id]['qty']['valuated']),
+                        nbFactureNonValides= _format_qty(v[id]['qty']['rejected']),
                         montantNonValide = str("{:,.0f}".format(montantNonValide)),
                         montantValide =  str("{:,.0f}".format(v[id]['qty']['sum']))
                         ))
@@ -398,8 +407,8 @@ def invoice_csu_query(user, **kwargs):
                         tarif=str("{:,.0f}".format(v[id]['tarif'])),
                         nbrFacture = str(int(v[id]['qty']['all'])),
                         mtnFactureRecues= str("{:,.0f}".format(v[id]['MontantRecue'])),
-                        nbFactureValides= str(v[id]['qty']['valuated']),
-                        nbFactureNonValides= str(v[id]['qty']['rejected']),
+                        nbFactureValides= _format_qty(v[id]['qty']['valuated']),
+                        nbFactureNonValides= _format_qty(v[id]['qty']['rejected']),
                         montantNonValide = str("{:,.0f}".format(montantNonValide)),
                         montantValide =  str("{:,.0f}".format(v[id]['qty']['sum']))
                         ))
@@ -416,8 +425,8 @@ def invoice_csu_query(user, **kwargs):
                         tarif=str("{:,.0f}".format(v[id]['tarif'])),
                         nbrFacture = str(int(v[id]['qty']['all'])),
                         mtnFactureRecues= str("{:,.0f}".format(v[id]['MontantRecue'])),
-                        nbFactureValides= str(v[id]['qty']['valuated']),
-                        nbFactureNonValides= str(v[id]['qty']['rejected']),
+                        nbFactureValides= _format_qty(v[id]['qty']['valuated']),
+                        nbFactureNonValides= _format_qty(v[id]['qty']['rejected']),
                         montantNonValide = str("{:,.0f}".format(montantNonValide)),
                         montantValide =  str("{:,.0f}".format(v[id]['qty']['sum']))
                         ))
