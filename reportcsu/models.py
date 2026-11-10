@@ -139,7 +139,7 @@ def invoice_csu_query(user, **kwargs):
         ## Get All claim corresponding to parameter sent
         statusExcluded = [1, 2]
         value = program.idProgram if program != 0 else 0
-        claimList = Claim.objects.exclude(
+        claimList = Claim.get_queryset(None, user).exclude(
             status__in=statusExcluded
         ).filter(
             date_to__gte=date_from,
@@ -609,7 +609,7 @@ def invoice_hiv_query(user, **kwargs):
         ).filter(nameProgram__in=['VIH', 'vih', 'HIV', 'hiv']).first()
     if hivprogram:
         print(hivprogram.idProgram)
-        claimList = Claim.objects.exclude(
+        claimList = Claim.get_queryset(None, user).exclude(
             status=1
         ).filter(
             date_from__gte=date_from,
@@ -758,7 +758,7 @@ def invoice_declaration_naissance_query(user, **kwargs):
         ## Get All claim corresponding to parameter sent
         statusExcluded = [1, 2]
         value = program.idProgram if program != 0 else 0
-        claimList = Claim.objects.exclude(
+        claimList = Claim.get_queryset(None, user).exclude(
             status__in=statusExcluded
         ).filter(
             date_to__gte=date_from,
@@ -1093,7 +1093,7 @@ def invoice_district_query(user, **kwargs):
         )
         statusExcluded = [1, 2]
         for facility in all_health_facilities:
-            claimList = Claim.objects.exclude(
+            claimList = Claim.get_queryset(None, user).exclude(
                 status__in=statusExcluded
             ).filter(
                 date_to__gte=date_from + "-01", # Premier our de la période
@@ -1211,7 +1211,7 @@ def invoice_fagep_query(user, **kwargs):
         ## Get All claim corresponding to parameter sent
         statusExcluded = [1, 2]
         value = program.idProgram if program != 0 else 0
-        claimList = Claim.objects.exclude(
+        claimList = Claim.get_queryset(None, user).exclude(
             status__in=statusExcluded
         ).filter(
             date_to__gte=date_from,
