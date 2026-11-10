@@ -6,6 +6,15 @@ from reportcsu.report_templates import rptInvoicePerFosa,\
 
 report_definitions = [ 
     {
+        "name": "bill_invoice_csu",
+        "engine": 0,
+        "default_report": rptInvoicePerFosa.template,
+        "description": "Facture CSU pour une facture enregistrée",
+        "module": "reportcsu",
+        "python_query": invoice_csu_query,
+        "permission": ["156101"],
+    },
+    {
         "name": "invoice_fosa_csu",
         "engine": 0,
         "default_report": rptInvoicePerFosa.template,
